@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>hoophub</title>
+
+<style>
+    .hero {
+        flex-shrink: 0;
+        background-image: url('{% static "image/main-page.jpg" %}');
+        background-size: cover;
+        background-position: center;
+        height: 85vh;
+    }
+    .hero h1 {
+        color: #F8F9FA;
+        font-weight: 700;
+        font-size: clamp(1.5em, 5vw, 2em);
+    }
+    .hero .brand-name {
+        font-weight: 700;
+        color: #005F73;
+    }
+    .feature-text {
+        color: #005F73;
+        font-size: 2em;
+        font-style: normal;
+        font-weight: 700;
+        padding: 20px clamp(20px, 6vw, 80px);
+    }
+    .features {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-shrink: 0;
+        text-align: left;
+        flex-shrink: 0;
+        padding: 20px clamp(20px, 8vw, 100px);
+    }
+    .features-content {
+        display: flex;
+        padding: 20px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    .features-title {
+        color: #FFF;
+        font-size: 1em;
+        font-weight: 700;
+        line-height: normal;
+        align-self: stretch;
+    }
+    .features-detail {
+        color: #FFF;
+        font-size: 0.8em;
+        font-weight: 500;
+        line-height: normal;
+        flex-wrap: wrap;
+    }
+    .features-card {
+        background-color: #005F73;
+        color: #FFF;
+        border-radius: 20px;
+        padding: 30px;
+        max-width: 350px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        max-width: 100%;
+    }
+    .explore-button {
+        background-color: #EE9B00;
+        color: #FFF;
+        font-weight: 600;
+        padding: 10px 20px;
+        border-radius: 99px;
+        text-align: center;
+        align-self: flex-end;
+        margin-top: auto;
+        box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
+        display: flex;
+        color: #FFF;
+    }
+</style>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar.html' %}
+
+<div class="hero">
+    <div style="padding: 100px 0px 100px 70px; text-align: left; padding: clamp(40px, 10vw, 100px);">
+        <h1 style="margin-top: 100px; display: block;">
+            <span style="display: block">Unlock your potential with </span><span class="brand-name" style="display:block">hoophub</span>
+        </h1>
+    </div>
+</div>
+
+<div class="trust-badge" style="margin-top: 100px">
+    <img src="{% static 'image/trust-badge.png' %}" alt="Trust badge">
+</div>
+
+<div class="feature-text">
+    <div style="text-align: center">
+        <h1>
+            <span style="">Explore our </span>
+            <span style="color: #EE9B00;">features</span>
+        </h1>
+    </div>
+</div>
+
+<div class="features">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 px-4 md:px-20">
+
+        <div class="features-card">
+            <div class="features-content">
+                <div class="features-title">
+                    <span>Catalog</span>
+                </div>
+                <div class="features-detail">
+                    <span>Browse our elite collection of on-court equipment, designed for every type of player. Find gear that elevates your game and filter easily by brand, size, and style!</span>
+                </div>
+                <a href="/" class="explore-button">Explore</a>
+            </div>
+        </div>
+
+        <div class="features-card">
+            <div class="features-content">
+                <div class="features-title">
+                    <span>Review</span>
+                </div>
+                <div class="features-detail">
+                    <span>Your experience on the court matters. Leave a rating and write a review to help fellow ballers make smarter choices. Your insights help everyone find the perfect equipment to elevate their game.</span>
+                </div>
+                <a href="/" class="explore-button">Explore</a>
+            </div>
+        </div>
+
+        <div class="features-card">
+            <div class="features-content">
+                <div class="features-title">
+                    <span>Checkout</span>
+                </div>
+                <div class="features-detail">
+                    <span>Your gear is in the cart and you're ready to make your move. Our checkout process is designed like a perfect fast break, quick, intuitive, and straight to the finish.</span>
+                </div>
+                <a href="/" class="explore-button">Explore</a>
+            </div>
+        </div>
+
+        <div class="features-card">
+            <div class="features-content">
+                <div class="features-title">
+                    <span>Invoice</span>
+                </div>
+                <div class="features-detail">
+                    <span>Review every great play from your shopping history. Review your purchase details with ease. It's your personal record of all the gear that has fueled your game.</span>
+                </div>
+                <a href="/" class="explore-button">Explore</a>
+            </div>
+        </div>
+
+        <div class="features-card">
+            <div class="features-content">
+                <div class="features-title">
+                    <span>Report</span>
+                </div>
+                <div class="features-detail">
+                    <span>If you've encountered a problem with your order, use this feature to report any issue, and our support team will immediately review the play. We're here to make the right call.</span>
+                </div>
+                <a href="/" class="explore-button">Explore</a>
+            </div>
+        </div>
+
+        <div class="features-card">
+            <div class="features-content">
+                <div class="features-title">
+                    <span>Wishlist</span>
+                </div>
+                <div class="features-detail">
+                    <span>Eyeing a new pair of signature sneakers or the latest team apparel? Add them to your lineup. When you're prepared to make the move, your future favorites are just a click away.</span>
+                </div>
+                <a href="/" class="explore-button">Explore</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock content %}

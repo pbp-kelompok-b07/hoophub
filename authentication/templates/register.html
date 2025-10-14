@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block meta %}
+<title>hoophub - Register</title>
+{% endblock meta %}
+
+{% block content %}
+<div class="w-full min-h-screen flex items-center justify-center p-8" style="background-color: #005F73;">
+  <div class="max-w-md w-full bg-white p-8 rounded-xl shadow-lg space-y-6">
+    <div>
+      <h2 class="text-center text-3xl font-extrabold text-gray-900">Register</h2>
+      <p class="text-center text-gray-600">Create your account</p>
+    </div>
+
+    <p id="registerMessage" class="text-center text-sm mt-4 text-gray-600"> </p>
+
+    <form id="registerForm" method="POST" action="" class="space-y-6">
+      {% csrf_token %}
+      
+      <div>
+        <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+        <input 
+          id="username" 
+          name="username" 
+          type="text" 
+          required 
+          class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:border-blue-400 transition-colors" 
+          placeholder="Choose a username">
+      </div>
+
+      <div>
+        <label for="password1" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+        <input 
+          id="password1" 
+          name="password1" 
+          type="password" 
+          required 
+          class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:border-blue-400 transition-colors" 
+          placeholder="Enter a secure password">
+      </div>
+
+      <div>
+        <label for="password2" class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+        <input 
+          id="password2" 
+          name="password2" 
+          type="password" 
+          required 
+          class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:border-blue-400 transition-colors" 
+          placeholder="Confirm your password">
+      </div>
+
+      <button 
+        type="submit" 
+        class="w-full text-white font-medium py-3 px-4 rounded-md hover:bg-blue-500 transition-colors"
+        style="background-color: #005F73">
+
+        <!-- Loading State -->
+        <span id="loading" class="hidden">
+          <svg class="animate-spin h-6 w-6 text-white-600 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+          </svg>
+        </span>
+
+        <span id="registerText">Register</span>
+      </button>
+    </form>
+
+    <div class="text-sm text-center">
+      <p class="text-gray-600">
+        Already have an account?
+        <a href="{% url 'authentication:login' %}" class="font-medium" style="color: #005F73;">
+          Sign In
+        </a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+const loadingSpinner = document.getElementById("loading");
+
+function displayPageSection({ showLoading = false}) {
+  loadingSpinner.classList.toggle('hidden', !showLoading);
+}
+
+document.getElementById("registerForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  displayPageSection({ showLoading: true });
+  registerText.textContent = '';
+
+  const formData = new FormData(e.target);
+  const message = document.getElementById("registerMessage");
+
+  try {
+    const response = await fetch ("{% url 'authentication:register' %}", {
+      method: "POST",
+      body: formData,
+      headers: {
+          "X-CSRFToken": "{{ csrf_token }}",
+      }
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      message.textContent = data.message;
+      message.className = "px-4 py-3 rounded text-sm border bg-green-50 border-green-200 text-green-700";
+
+      setTimeout(() => {
+        window.location.href = "{% url 'authentication:login' %}";
+      }, 800);
+    } else {
+      message.textContent = data.errors[Object.keys(data.errors)[0]][0] || "Invalid credentials!";
+      message.className = "px-4 py-3 rounded text-sm border bg-red-50 border-red-200 text-red-700";
+    }
+  } catch (error) {
+    message.textContent = "An error occured.";
+    message.className = "px-4 py-3 rounded text-sm border bg-gray-50 border-gray-200 text-gray-700";
+  }
+  displayPageSection({ showLoading: false });
+  registerText.textContent = 'Register';
+})
+</script>
+{% endblock content %}
