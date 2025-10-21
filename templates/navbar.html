@@ -19,6 +19,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                         <path d="M12 0C5.4948 0 0 5.4948 0 12C0 18.5052 5.4948 24 12 24C18.5052 24 24 18.5052 24 12C24 5.4948 18.5052 0 12 0ZM12 6C14.0724 6 15.6 7.5264 15.6 9.6C15.6 11.6736 14.0724 13.2 12 13.2C9.9288 13.2 8.4 11.6736 8.4 9.6C8.4 7.5264 9.9288 6 12 6ZM5.8728 17.7264C6.9492 16.1424 8.7444 15.0864 10.8 15.0864H13.2C15.2568 15.0864 17.0508 16.1424 18.1272 17.7264C16.5936 19.368 14.418 20.4 12 20.4C9.582 20.4 7.4064 19.368 5.8728 17.7264Z" fill="#005F73"/>
                     </svg>
+                    <a href="{% url 'catalog:product_view' %}" class="text-[#005F73] hover:text-[#EE9B00] font-semibold">Catalog</a>
                     <a href="{% url 'authentication:login' %}">Sign in</a>
                 </div>
                 {% endif %}
@@ -53,7 +54,7 @@
     </div>
 
     <div class="hidden md:flex md:flex-row absolute md:static top-full left-0 w-full bg-white md:bg-transparent shadow-md md:shadow-none z-50" style="justify-content: space-between; align-items: center; flex-shrink: 0; font-size: 0.9em; padding: 20px 40px;">
-        <a href="/">Products</a>
+        <a href="{% url 'catalog:product_view' %}">Products</a>
         <a href="/">Checkout</a>
         <a href="/">Review</a>
         <a href="/">Wishlist</a>
@@ -64,7 +65,7 @@
     <div class="mobile-menu hidden md:hidden border-t">
         <div class="px-2 pt-2 pb-3 space-y-1">
             <div class="flex flex-col space-y-2">
-                <a href="/">Products</a>
+                <a href="{% url 'catalog:product_view' %}">Products</a>
                 <a href="/">Checkout</a>
                 <a href="/">Review</a>
                 <a href="/">Wishlist</a>
@@ -75,6 +76,7 @@
     </div>
 
     <p id="logoutMessage" class="text-center text-sm mt-4 text-gray-600"> </p>
+    <form id="csrf-form" class="hidden">{% csrf_token %}</form>
 </nav>
 
 <script>
@@ -82,24 +84,37 @@
   const menu = document.querySelector(".mobile-menu");
   const message = document.getElementById("logoutMessage");
 
-  btn.addEventListener("click", () => {
-    menu.classList.toggle("hidden");
-  });
+  if (btn) {
+    btn.addEventListener("click", () => {
+      menu.classList.toggle("hidden");
+    });
+  }
+
+  // Ambil CSRF token yang valid dari form tersembunyi
+  const csrfInput = document.querySelector('#csrf-form input[name="csrfmiddlewaretoken"]');
+  const CSRF_TOKEN = csrfInput ? csrfInput.value : "";
 
   async function logout() {
-    const response = await fetch("{% url 'authentication:logout' %}", {
-      method: "POST",
-      headers: {
-          "X-CSRFToken": "{{ csrf_token }}",
+    try {
+      const response = await fetch("{% url 'authentication:logout' %}", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": CSRF_TOKEN,
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        message.textContent = "You have been logged out.";
+        setTimeout(() => {
+          window.location.href = "{% url 'main:show_main' %}";
+        }, 800);
+      } else {
+        message.textContent = data.message || "Logout failed.";
       }
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
-      setTimeout(() => {
-        window.location.href = "{% url 'main:show_main' %}";
-      }, 800);
+    } catch (e) {
+      message.textContent = "Network error. Please try again.";
     }
   }
 </script>
