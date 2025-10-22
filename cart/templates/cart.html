@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block meta %}
+    <title>Shopping Cart</title>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar.html' %}
+
+<div class="cart-container" style="max-width: 960px; margin: 40px auto; padding: 0 20px;">
+
+    <h1 style="font-size: 24px; font-weight: bold; padding-bottom: 10px; border-bottom: 2px dashed #ccc; margin-bottom: 30px;">
+        Review your cart
+    </h1>
+
+    <div class="cart-items-list">
+        
+        {% for item in cart_items %}
+        <div class="cart-item" style="display: flex; align-items: flex-start; margin-bottom: 25px; padding-bottom: 25px; border-bottom: 1px solid #eee;">
+            
+            <div class="item-image" style="margin-right: 20px;">
+                <img src="{{ item.product.thumbnail }}" alt="{{ item.product.name }}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 5px;">
+            </div>
+
+            <div class="item-details" style="flex: 1;">
+                
+                <h3 style="font-size: 1.1rem; font-weight: bold; margin: 0 0 5px 0;">{{ item.product.name }}</h3>
+                
+                <p style="font-size: 0.9rem; color: #777; margin: 0 0 10px 0;">{{ item.product.subtitle }}</p>
+
+                <h4 style="font-size: 1.2rem; font-weight: bold; margin: 0 0 10px 0;">Rp{{ item.product.price }}</h4>
+
+                <p style="font-size: 0.9rem; color: #555; margin: 0 0 15px 0; line-height: 1.5;">
+                    {{ item.product.description }}
+                </p>
+
+                <div class="item-actions">
+                    <a href="{% url 'cart:delete_from_cart' item.id %}" class="btn-checkout" 
+                       style="background-color: #EE9B00; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; margin-right: 10px; font-size: 0.9rem; font-weight: bold;">
+                       Checkout
+                    </a>
+
+                    <form action="{% url 'cart:delete_from_cart' item.id %}" method="POST" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-delete" 
+                                style="background-color: #c9302c; color: white; padding: 8px 15px; border: none; border-radius: 5px; font-size: 0.9rem; font-weight: bold; cursor: pointer;">
+                            Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="cart-empty" style="text-align: center; padding: 50px 20px;">
+            <h2 style="font-weight: bold; color: #555;">Your cart is empty.</h2>
+            <p style="color: #777; margin-bottom: 30px;">Looks like you haven't added anything to your cart yet.</p>
+            <a href="{% url 'main:show_main' %}" style="background-color: #EE9B00; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                Shop Now
+            </a>
+        </div>
+        {% endfor %}
+
+    </div>
+</div>
+
+{% endblock content %}
