@@ -25,21 +25,26 @@
                 
                 <h3 style="font-size: 1.1rem; font-weight: bold; margin: 0 0 5px 0;">{{ item.product.name }}</h3>
                 
-                <p style="font-size: 0.9rem; color: #777; margin: 0 0 10px 0;">{{ item.product.subtitle }}</p>
+                <p style="font-size: 0.9rem; color: #777; margin: 0 0 10px 0;">
+                    Brand: {{ item.product.brand | capfirst }}
+                </p>
 
-                <h4 style="font-size: 1.2rem; font-weight: bold; margin: 0 0 10px 0;">Rp{{ item.product.price }}</h4>
+                <h4 style="font-size: 1.1rem; font-weight: normal; margin: 0 0 5px 0;">
+                    Harga Satuan: Rp{{ item.product.price }}
+                </h4>
+                <h4 style="font-size: 1.1rem; font-weight: normal; margin: 0 0 10px 0;">
+                    Kuantitas: {{ item.quantity }}
+                </h4>
+                <h4 style="font-size: 1.2rem; font-weight: bold; margin: 0 0 10px 0;">
+                    Subtotal: Rp{{ item.item_total }}
+                </h4>
 
                 <p style="font-size: 0.9rem; color: #555; margin: 0 0 15px 0; line-height: 1.5;">
                     {{ item.product.description }}
                 </p>
 
                 <div class="item-actions">
-                    <a href="{% url 'cart:delete_from_cart' item.id %}" class="btn-checkout" 
-                       style="background-color: #EE9B00; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; margin-right: 10px; font-size: 0.9rem; font-weight: bold;">
-                       Checkout
-                    </a>
-
-                    <form action="{% url 'cart:delete_from_cart' item.id %}" method="POST" style="display: inline;">
+                    <form action="{% url 'cart:remove_from_cart' item.id %}" method="POST" style="display: inline;">
                         {% csrf_token %}
                         <button type="submit" class="btn-delete" 
                                 style="background-color: #c9302c; color: white; padding: 8px 15px; border: none; border-radius: 5px; font-size: 0.9rem; font-weight: bold; cursor: pointer;">
@@ -60,6 +65,21 @@
         {% endfor %}
 
     </div>
+
+    {% if cart_items %}
+    <div class="cart-summary" style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #ccc; text-align: right;">
+        
+        <h2 style="font-size: 1.8rem; font-weight: bold; margin-bottom: 20px;">
+            Total Belanja: Rp{{ total_cart_price }}
+        </h2>
+        
+        <a href="{% url 'checkout:show_checkout' %}" class="btn-checkout-total"
+           style="background-color: #EE9B00; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-size: 1.1rem; font-weight: bold;">
+            Lanjut ke Checkout
+        </a>
+    </div>
+    {% endif %}
+
 </div>
 
 {% endblock content %}

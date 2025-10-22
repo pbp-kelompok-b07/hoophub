@@ -1,72 +1,73 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.http import HttpResponseRedirect
-from cart.models import Product
+from catalog.models import Product 
+import json
 
-
-# Create your views here.
 def show_cart(request):
-    # cart_data = request.session.get('cart', {})
+    cart_data = request.session.get('cart', {})
     
-    # cart_items = []
-    # total_cart_price = 0
+    cart_items = []
+    total_cart_price = 0
     
-    # for product_id in cart_data.items():
-    #     try:
-    #         product = Product.objects.get(id=product_id)            
-    #         total_cart_price += product.price
+    for product_id, item_data in cart_data.items():
+        try:
+            product = Product.objects.get(id=product_id)
             
-    #         cart_items.append({
-    #             'product': product,
-    #             'id': product_id,
-    #         })
-    #     except Product.DoesNotExist:
-    #         continue
+            quantity = item_data.get('quantity', 1) 
             
-    fake_product_1 = {
-        'id': '123e4567-e89b-12d3-a456-426614174001',
-        'name': 'Baju Basket Keren',
-        'thumbnail': 'https://images.tokopedia.net/img/cache/900/VqbcmM/2022/1/19/22003c2d-9477-4467-b586-3f1396d2c4ea.jpg', # URL gambar asli
-        'price': 150000,
-        'description': 'Ini adalah deskripsi produk palsu pertama.'
-    }
-
-    fake_product_2 = {
-        'id': '987e6543-e21b-32d1-a456-426614174002',
-        'name': 'Sepatu Lari Cepat',
-        'thumbnail': 'https://images.tokopedia.net/img/cache/900/VqbcmM/2023/12/12/f22e7b51-246e-444f-8e4d-c124a9e9e69c.jpg', # URL gambar asli
-        'price': 750000,
-        'description': 'Deskripsi produk palsu kedua untuk sepatu.'
-    }
-
-    # Ini adalah data 'cart_items' palsu
-    hardcoded_cart_items = [
-        {
-            'id': '123e4567-e89b-12d3-a456-426614174001',
-            'product': fake_product_1, # Data produk palsu
-            'quantity': 2,
-            'item_total': 300000
-        },
-        {
-            'id': '987e6543-e21b-32d1-a456-426614174002',
-            'product': fake_product_2, # Data produk palsu
-            'quantity': 1,
-            'item_total': 750000
-        }
-    ]
-
+            item_total = product.price * quantity
+            total_cart_price += item_total
+            
+            cart_items.append({
+                'product': product,
+                'id': product_id,
+                'quantity': quantity,
+                'item_total': item_total,
+            })
+        except Product.DoesNotExist:
+            if product_id in request.session['cart']:
+                del request.session['cart'][product_id]
+                request.session.modified = True
+            continue
+            
     context = {
-        'cart_items': hardcoded_cart_items,
-        'total_cart_price': 1050000,
+        'cart_items': cart_items,
+        'total_cart_price': total_cart_price,
     }
     
     return render(request, 'cart.html', context)
 
 @require_POST
-def delete_from_cart(request, id):
-    product = get_object_or_404(Product, pk=id)
-    product.delete()
+def remove_from_cart(request, item_id):
+
+    cart = request.session.get('cart', {})
     
+    product_id_str = str(item_id)
+    
+    if product_id_str in cart:
+        del cart[product_id_str]
+        
+        request.session['cart'] = cart
+        request.session.modified = True
+        
     return HttpResponseRedirect(reverse('cart:show_cart'))
 
+@require_POST
+def add_to_cart(request, product_id):
+
+    cart = request.session.get('cart', {})
+    
+    quantity = int(request.POST.get('quantity', 1))
+    
+    product_id_str = str(product_id)
+    
+    if product_id_str in cart:
+        cart[product_id_str]['quantity'] += quantity
+    else:
+        cart[product_id_str] = {'quantity': quantity}
+        
+    request.session['cart'] = cart
+    
+    return redirect(request.META.get('HTTP_REFERER', 'main:show_main'))
