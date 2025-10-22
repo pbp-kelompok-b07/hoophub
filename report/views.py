@@ -21,7 +21,7 @@ def show_report(request):
     }
     return render(request, 'report.html', context)
 
-@login_required(login_url='/authentication/login/')
+@login_required(login_url=LOGIN_URL)
 def create_report_ajax(request):
     if request.method == 'POST':
         form = ReportForm(request.POST)
