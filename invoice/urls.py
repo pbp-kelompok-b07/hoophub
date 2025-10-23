@@ -5,5 +5,5 @@ app_name = 'invoice'
 
 urlpatterns = [
     path("", show_invoices, name="show_invoices"),
-    path("invoice", invoice_detail, name="invoice_detail"),
+    path("<uuid:id>/", invoice_detail, name="invoice_detail"),
 ]

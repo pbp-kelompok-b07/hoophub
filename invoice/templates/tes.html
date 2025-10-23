@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>hoophub</title>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar.html' %}
+<main>
+    <div class="pt-[130px] px-[40px]">
+        <h2 style="padding: 0px 50px 10px 50px; font-weight: 700; color: #000;">Track your reports!</h2>
+        <hr style="border: none; border-top: 2px dashed #005F73; margin: 10px 50px 30px 50px;">
+
+        {% if reports %}
+            {% for report in report_list %}
+            <div style="padding: 0px 50px; background-color: #E0E0E0; border-radius: 16px; padding: 20px 30px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3 style="font-weight: 700;">{{ report.title }}</h3>
+                        <p style="color: #4A4A4A;">{{ report.description }}</p>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <a href="{% url 'report:edit_report' report.id %}" 
+                        style="background-color: #EE9B00; color: white; padding: 5px 15px; border-radius: 99px; font-weight: 500; text-decoration: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                        Edit
+                        </a>
+                        <form method="POST" action="{% url 'report:delete_report' report.id %}">
+                            {% csrf_token %}
+                            <button type="submit" 
+                                    style="background-color: #BB3E03; color: white; padding: 5px 15px; border-radius: 99px; font-weight: 500; border: none; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                                    Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="padding: 0px 50px;color: #666;">You haven’t submitted any reports yet.</p>
+        {% endif %}
+    </div>
+</main> 
+{% endblock content %}

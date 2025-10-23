@@ -14,12 +14,12 @@ from invoice.models import Invoice
 
 # Create your views here.
 
-@login_required(login_url='/authenticate/login')
+# @login_required(login_url='/authenticate/login')
 def show_invoices(request):
-    invoice = Invoice.objects.filter(user=request.user)
-    return render(request, "invoices.html", invoice)
+    # invoices = Invoice.objects.filter(user=request.user)
+    return render(request, "invoice.html", None)#{"invoices" : invoices})
 
 @login_required(login_url='/authenticate/login')
 def invoice_detail(request, id):
     invoice = get_object_or_404(Invoice, pk=id)
-    return render(request, "invoice_detail.html", invoice)
+    return render(request, "invoice_detail.html", {"invoice" : invoice})

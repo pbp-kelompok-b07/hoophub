@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block content %}
+{% include "navbar.html" %}
+
+<style>
+  .orders-wrap {
+    width: 100%;
+    margin: 24px 0;
+    padding: 0;
+  }
+
+  .orders-head {
+    font-weight: 700;
+    font-size: 22px;
+    margin-bottom: 12px;
+  }
+
+  .dash {
+    border-top: 3px dashed #189ab4;
+    margin: 8px 0 24px;
+  }
+
+  .order-item {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    margin: 24px 0 36px;
+  }
+
+  .order-img {
+    width: 160px;
+    height: 160px;
+    flex: 0 0 160px;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+
+  .order-body {
+    flex: 1 1 auto;
+  }
+
+  .order-title {
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: 6px;
+  }
+
+  .order-sub {
+    color: #222;
+    white-space: pre-line;
+  }
+
+  .order-price {
+    font-weight: 700;
+    margin: 10px 0;
+  }
+
+  .order-desc {
+    color: #555;
+    max-width: 720px;
+  }
+
+  .order-actions {
+    display: flex;
+    gap: 12px;
+    margin-left: auto;
+  }
+
+  .btn {
+    border: none;
+    border-radius: 20px;
+    padding: 10px 16px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .15);
+  }
+
+  .btn-primary {
+    background: #f4a100;
+    color: #fff;
+  }
+
+  .btn-login {
+    background: #f4a100;
+    color: #fff;
+    display: inline-block;
+  }
+
+  .btn-danger {
+    background: #c63d0f;
+    color: #fff;
+  }
+
+  .row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .row-space {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  @media (max-width:700px) {
+    .order-item {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .order-actions {
+      justify-content: flex-start;
+    }
+
+    .order-img {
+      width: 120px;
+      height: 120px;
+      flex-basis: 120px;
+    }
+  }
+</style>
+
+<div class="max-w-6xl mx-auto px-6 lg:px-8">
+  <div class="orders-wrap md:pl-10">
+    {% if user.is_authenticated %}
+      <div class="orders-head">Track your past orders!</div>
+      <div class="dash"></div>
+
+      {% for inv in invoices %}
+        <div class="order-item">
+          {% if inv.product.image %}
+            <img class="order-img" src="{{ inv.product.image.url }}" alt="{{ inv.product.name }}">
+          {% endif %}
+
+          <div class="order-body">
+            <div class="row-space">
+              <div class="order-title">
+                {{ inv.product.brand|default_if_none:"" }} {{ inv.product.name }}<br>
+                <span class="order-sub">{{ inv.product.subtitle|default:"" }}</span>
+              </div>
+
+              <div class="order-actions">
+                <form action="{% url 'invoice:reorder' inv.id %}" method="post">
+                  {% csrf_token %}
+                  <button class="btn btn-primary" type="submit">Order again</button>
+                </form>
+                <form action="{% url 'invoice:delete' inv.id %}" method="post" onsubmit="return confirm('Delete this invoice?')">
+                  {% csrf_token %}
+                  <button class="btn btn-danger" type="submit">Delete</button>
+                </form>
+              </div>
+            </div>
+
+            <div class="order-price">₹{{ inv.product.price|floatformat:2 }}</div>
+            <div class="order-desc">
+              {{ inv.product.description|default:"Inspired by the team's redeeming run in Beijing, this edition of the Kobe 4 Protro returns with the same winning spirit.." }}
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <p>No invoices yet.</p>
+      {% endfor %}
+    {% else %}
+      <div class="orders-head">You are not logged in 😅</div>
+      <div class="dash"></div>
+      <p>Please log in first to view your invoices.</p>
+      <a href="{% url 'authentication:login' %}" class="btn btn-login">Login Now</a>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
