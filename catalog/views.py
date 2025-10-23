@@ -94,4 +94,6 @@ def products_json(request):
         "id", "name", "brand", "category", "price",
         "release_date", "is_available", "image", "description"
     )
-    return JsonResponse(list(products), safe=False)
+    data = list(products)
+    return JsonResponse(data, safe=False)
+

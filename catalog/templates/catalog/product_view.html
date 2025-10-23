@@ -2,109 +2,173 @@
 {% load static %}
 
 {% block content %}
-{% include 'navbar.html' %} 
-<main>
-  <div class="max-w-7xl mx-auto px-6 py-8">
-    <h1 class="text-4xl font-bold text-[#005C67] mb-6 text-center">HoopHub Catalog</h1>
-    <p class="text-center text-gray-600 mb-8">
-      Jelajahi produk-produk terbaik dari <b>Nike</b>, <b>Adidas</b>, <b>Spalding</b>, <b>Wilson</b>, dan <b>TARMAK</b>.
-    </p>
+<div class="max-w-7xl mx-auto px-6 py-8">
+  <h1 class="text-4xl font-bold text-[#005C67] mb-6 text-center">HoopHub Catalog</h1>
+  <p class="text-center text-gray-600 mb-8">
+    Jelajahi produk-produk terbaik dari <b>Nike</b>, <b>Adidas</b>, <b>Spalding</b>, <b>Wilson</b>, dan <b>TARMAK</b>.
+  </p>
 
-    <!-- Filter Form -->
-    <form id="filter-form" class="flex flex-wrap justify-center gap-3 mb-10">
-      <input type="text" name="q" placeholder="Cari produk..." class="border rounded-lg p-2 w-48">
-      <select name="category" class="border rounded-lg p-2">
-        <option value="">Semua Kategori</option>
-        <option value="Shoes">Sepatu</option>
-        <option value="Jersey">Jersey</option>
-        <option value="Ball">Bola</option>
-        <option value="Hoop">Ring</option>
-        <option value="Accessories">Aksesoris</option>
-      </select>
-      <input type="text" name="brand" placeholder="Merek" class="border rounded-lg p-2 w-40">
-      <button type="submit" class="bg-[#005C67] text-white rounded-lg px-4 py-2 hover:bg-[#007681]">
-        Cari
-      </button>
-    </form>
+  <!-- Filter Form -->
+  <form id="filter-form" class="flex flex-wrap justify-center gap-3 mb-10">
+    <input type="text" name="q" placeholder="Cari produk..." class="border rounded-lg p-2 w-48">
+    <select name="category" class="border rounded-lg p-2">
+      <option value="">Semua Kategori</option>
+      <option value="Shoes">Sepatu</option>
+      <option value="Jersey">Jersey</option>
+      <option value="Ball">Bola</option>
+      <option value="Hoop">Ring</option>
+      <option value="Accessories">Aksesoris</option>
+    </select>
+    <input type="text" name="brand" placeholder="Merek" class="border rounded-lg p-2 w-40">
+    <button type="submit" class="bg-[#005C67] text-white rounded-lg px-4 py-2 hover:bg-[#007681]">
+      Cari
+    </button>
+  </form>
 
-    <!-- Product Grid -->
-    <div id="product-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 text-center">
-      <p class="text-gray-400">Memuat produk...</p>
-    </div>
+  <!-- Product Grid -->
+  <div id="product-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 text-center">
+    <p class="text-gray-400">Memuat produk...</p>
   </div>
-</main>
+</div>
 
+<!-- Modal Add Product (ADMIN ONLY) -->
+{% if user.is_staff %}
+<div id="productModal"
+     class="fixed inset-0 bg-black bg-opacity-40 hidden flex justify-center items-center z-50 transition-all">
+  <div class="bg-white rounded-2xl shadow-2xl w-96 p-6 transform scale-95 opacity-0 transition-all duration-300"
+       id="modalCard">
+    <h2 id="modalTitle" class="text-xl font-bold text-[#005C67] mb-4 text-center">Add Product</h2>
+
+    <form id="productForm">
+      {% csrf_token %}
+      <input type="hidden" name="id" id="productId">
+
+      <div class="space-y-3">
+        <input type="text" name="name" id="name" placeholder="Name of Product"
+               class="w-full border rounded p-2" required>
+        <input type="text" name="brand" id="brand" placeholder="Brand"
+               class="w-full border rounded p-2" required>
+
+        <select name="category" id="category" class="w-full border rounded p-2" required>
+          <option value="">Category</option>
+          <option value="Shoes">Shoes</option>
+          <option value="Jersey">Jersey</option>
+          <option value="Ball">Ball</option>
+          <option value="Hoop">Hoop</option>
+          <option value="Accessories">Accessories</option>
+        </select>
+
+        <!-- 🟡 Deskripsi -->
+        <textarea name="description" id="description"
+                  placeholder="Product Description"
+                  class="w-full border rounded p-2 h-24 resize-none"></textarea>
+
+        <input type="number" name="price" id="price" placeholder="Price (Rp)"
+               class="w-full border rounded p-2" required>
+        <input type="number" name="stock" id="stock" placeholder="Stock"
+               class="w-full border rounded p-2" required>
+        <input type="url" name="image" id="image" placeholder="Link Image (URL)"
+               class="w-full border rounded p-2">
+        <input type="date" name="release_date" id="release_date"
+               class="w-full border rounded p-2">
+      </div>
+
+      <div class="flex justify-end gap-2 mt-5">
+        <button type="button" id="closeModal" class="text-gray-500 hover:text-gray-700">Cancel</button>
+        <button type="submit" id="saveBtn"
+                class="bg-[#005C67] text-white px-4 py-2 rounded hover:bg-[#007681] transition">
+          Save
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<!-- JS -->
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
   const container = document.getElementById("product-container");
   const form = document.getElementById("filter-form");
+  const csrftoken = document.cookie.match(/csrftoken=([^;]+)/)?.[1];
 
-  function formatRupiah(angka) {
-    let numberString = angka.toString().replace(/[^,\d]/g, ""),
-        split = numberString.split(","),
-        sisa = split[0].length % 3,
-        rupiah = split[0].substr(0, sisa),
-        ribuan = split[0].substr(sisa).match(/\d{3}/gi);
-    if (ribuan) {
-      let separator = sisa ? "." : "";
-      rupiah += separator + ribuan.join(".");
-    }
-    rupiah = split[1] !== undefined ? rupiah + "," + split[1] : rupiah;
-    return "Rp " + rupiah;
-  }
+  const productModal = document.getElementById("productModal");
+  const modalCard = document.getElementById("modalCard");
+  const openAddModal = document.getElementById("openAddModal");
+  const closeModal = document.getElementById("closeModal");
+  const productForm = document.getElementById("productForm");
 
-  function loadProducts(params = "") {
+  // Modal animasi
+  const showModal = () => {
+    productModal.classList.remove("hidden");
+    setTimeout(() => modalCard.classList.replace("scale-95", "scale-100"), 20);
+    modalCard.classList.replace("opacity-0", "opacity-100");
+  };
+  const hideModal = () => {
+    modalCard.classList.replace("scale-100", "scale-95");
+    modalCard.classList.replace("opacity-100", "opacity-0");
+    setTimeout(() => productModal.classList.add("hidden"), 200);
+  };
+  if (openAddModal) openAddModal.addEventListener("click", showModal);
+  if (closeModal) closeModal.addEventListener("click", hideModal);
+
+  // Format harga
+  const formatRupiah = (num) => "Rp " + (num || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+  // Template kartu produk
+  const productCard = (p) => `
+    <div class="bg-white rounded-xl shadow-md hover:shadow-lg transition p-4 flex flex-col">
+      <img src="${p.image || ''}" alt="${p.name}" class="h-56 w-full object-cover rounded-md mb-3" />
+      <h3 class="text-xl font-semibold text-[#005C67]">${p.name}</h3>
+      <p class="text-gray-600">${p.brand} • ${p.category}</p>
+      <p class="text-[#F5A623] font-bold mt-1 mb-2">${formatRupiah(p.price)}</p>
+      <p class="text-sm text-gray-500 mb-2">${p.description || '-'}</p>
+      <p class="text-xs text-gray-400 mb-2">Dirilis: ${p.release_date || '-'}</p>
+      ${p.is_available ? `<p class="text-green-600 font-medium">Tersedia</p>` : `<p class="text-red-600 font-medium">Stok Habis</p>`}
+    </div>
+  `;
+
+  const renderProducts = (data) => {
+    container.innerHTML = data.length
+      ? data.map(productCard).join("")
+      : `<p class="text-gray-500 col-span-3">Tidak ada produk ditemukan.</p>`;
+  };
+
+  // Load produk dari JSON
+  const loadProducts = (params = "") => {
     fetch(`{% url 'catalog:products_json' %}?${params}`)
-      .then((res) => res.json())
-      .then((products) => {
-        container.innerHTML = "";
-        if (products.length === 0) {
-          container.innerHTML = `<p class="text-center text-gray-500 col-span-3">Tidak ada produk ditemukan.</p>`;
-          return;
-        }
+      .then(res => res.json())
+      .then(renderProducts)
+      .catch(() => container.innerHTML = `<p class="text-red-500 col-span-3">Gagal memuat produk.</p>`);
+  };
 
-        products.forEach((p) => {
-          const price = formatRupiah(p.price);
-          const rating = p.rating ? `⭐ ${p.rating.toFixed(1)}/5` : "";
-          const releaseDate = p.release_date
-            ? new Date(p.release_date).toLocaleDateString("id-ID", {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              })
-            : "-";
-          const available = p.is_available
-            ? `<p class='text-green-600 font-medium'>Tersedia</p>`
-            : `<p class='text-red-600 font-medium'>Stok Habis</p>`;
-
-          container.innerHTML += `
-          <div class="bg-white rounded-xl shadow-md hover:shadow-lg transition p-4 flex flex-col">
-            ${p.image ? `<img src="${p.image}" alt="${p.name}" class="h-56 w-full object-cover rounded-md mb-3">`
-                       : `<div class="h-56 w-full bg-gray-100 rounded-md mb-3"></div>`}
-            <h3 class="text-xl font-semibold text-[#005C67]">${p.name}</h3>
-            <p class="text-gray-600">${p.brand} • ${p.category}</p>
-            <p class="text-[#F5A623] font-bold mt-1 mb-2">${price}</p>
-            <p class="text-sm text-gray-700 mb-1">${rating}</p>
-            <p class="text-xs text-gray-400 mb-2">Dirilis: ${releaseDate}</p>
-            ${available}
-          </div>`;
-        });
-      })
-      .catch((err) => {
-        container.innerHTML = `<p class="text-red-500 text-center">Gagal memuat produk.</p>`;
-        console.error(err);
-      });
-  }
-
-  // saat halaman dibuka
   loadProducts();
 
-  // saat filter di-submit
-  form.addEventListener("submit", function (e) {
+  // Filter form submit
+  form.addEventListener("submit", (e) => {
     e.preventDefault();
     const params = new URLSearchParams(new FormData(form)).toString();
     loadProducts(params);
   });
+
+  // Submit Add Product
+  if (productForm) {
+    productForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(productForm);
+      const res = await fetch("{% url 'catalog:product_create' %}", {
+        method: "POST",
+        headers: { "X-CSRFToken": csrftoken },
+        body: formData
+      });
+      if (res.ok) {
+        hideModal();
+        loadProducts();
+      } else {
+        alert("Gagal menambahkan produk.");
+      }
+    });
+  }
 });
 </script>
 {% endblock %}
