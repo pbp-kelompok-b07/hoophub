@@ -56,7 +56,7 @@
         <a href="{% url 'catalog:product_list' %}">Products</a>
         <a href="{% url 'cart:show_cart' %}">Checkout</a>
         <a href="{% url 'review:show_review' %}">Review</a>
-        <a href="/">Wishlist</a>
+        <a href="{% url 'wishlist:list' %}">Wishlist</a>
         <a href="/">Invoice</a>
         <a href="/">Report</a>
     </div>
@@ -67,7 +67,7 @@
                 <a href="{% url 'catalog:product_list' %}">Products</a>
                 <a href="/">Checkout</a>
                 <a href="{% url 'review:show_review' %}">Review</a>
-                <a href="/">Wishlist</a>
+                <a href="{% url 'wishlist:list' %}">Wishlist</a>
                 <a href="/">Invoice</a>
                 <a href="/">Report</a>
             </div>
