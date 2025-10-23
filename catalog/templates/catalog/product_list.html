@@ -232,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const card = document.querySelector(`.deleteBtn[data-id='${deleteId}']`)?.closest(".bg-white");
         if (card) card.remove();
       } else {
-        alert("Gagal menghapus produk.");
+        alert("Delete product failed.");
       }
     });
   }
@@ -255,7 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
         hideModal(productModal, modalCard);
         location.reload();
       } else {
-        alert("Terjadi kesalahan. Coba lagi.");
+        alert("Error. Try again later.");
       }
     });
   }
