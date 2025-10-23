@@ -21,7 +21,7 @@
     }
     .review-container {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         gap: 20px;
         padding: 20px;
     }
@@ -47,7 +47,6 @@
         height: 120px;
         object-fit: contain;
         flex-shrink: 0;
-        border-radius: 30px;
     }
     .review-product-content {
         flex-grow: 1;
@@ -125,18 +124,6 @@
         <span class="content">Look back your reviews!</span>
     </div>
 
-    <div>
-        <button type="button" onclick="showModal()">
-            review
-        </button>
-    </div>
-
-    <div>
-        <button type="button" onclick="showEditModal()">
-            review edit
-        </button>
-    </div>
-
     <div id="review-container" class="review-container"></div>
 
     <h2 id="empty" style="text-align: center; display: none;">No reviews yet.</h2>
@@ -169,7 +156,7 @@
                 reviewContainer.innerHTML = '';
                 reviews.forEach(review => {reviewContent = `
                     <div class="review-card flex flex-col md:flex-row">
-                        <img class="review-product-image w-full h-auto object-cover rounded-t-lg md:w-48 h-48" src="${review.product.url}" alt="Product image">
+                        <img class="review-product-image w-full h-auto object-cover rounded-lg md:w-48 h-48" src="${review.product.image}" alt="Product image">
                         <div class="review-details">
                             <h2 class="review-product-name">${review.product.name}</h2>
                             
@@ -181,8 +168,8 @@
                             <h3 class="review-message">${review.review}</h3>
                         </div>
                         <div class="review-action">
-                            <button class="review-edit-button" data-id="${review.pk}">Edit</button>
-                            <button class="review-delete-button" data-id="${review.pk}">Delete</button>
+                            <button class="review-edit-button" onclick="showEditReviewModal('${review.id}')">Edit</button>
+                            <button class="review-delete-button" onclick="showDeleteReviewModal('${review.id}')">Delete</button>
                         </div>
                     </div>
                 `;
@@ -197,7 +184,7 @@
 
     function stars(rating) {
         let stars = '';
-        for (let i = 1; i <= 5; i++) { // kalau ada rating, kasih class 'rated'
+        for (let i = 1; i <= 5; i++) { // kalau ada rating, kasih class 'rated' (untuk kasih style)
             stars += `<span class="star ${i <= rating ? 'rated' : ''}">&#9733;</span>`;
         }
         return stars;

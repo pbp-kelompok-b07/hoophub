@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 {% include 'navbar.html' %}
+
 <div class="max-w-7xl mx-auto px-6 py-8">
   <h1 class="text-4xl font-bold text-[#005C67] mb-6 text-center">Explore Our Basketball Collection</h1>
   <p class="text-center text-gray-600 mb-8">Temukan perlengkapan basket dari merek-merek terbaik: <b>Nike</b>, <b>Adidas</b>, <b>Spalding</b>, <b>Wilson</b>, dan <b>TARMAK</b>.</p>
@@ -40,7 +41,14 @@
         {% if p.is_available %}Tersedia{% else %}Stok Habis{% endif %}
       </p>
       <p class="text-xs text-gray-400 mb-4">Dirilis: {{ p.release_date }}</p>
-
+      <div>
+        <button type="button" onclick="showCreateReviewModal({{ p.id }})">
+            review
+        </button>
+        <button type="button"  onclick="showReportModal({{ p.id }})">
+          Laporkan
+        </button>
+      </div>
       <div class="mt-auto flex justify-between">
         <a href="{% url 'catalog:product_update' p.pk %}" class="bg-[#005C67] text-white rounded-lg px-3 py-1 hover:bg-[#007681]">Edit</a>
         <a href="{% url 'catalog:product_delete' p.pk %}" class="bg-red-600 text-white rounded-lg px-3 py-1 hover:bg-red-700">Hapus</a>
@@ -55,4 +63,5 @@
     <a href="{% url 'catalog:product_create' %}" class="bg-[#F5A623] text-white font-semibold rounded-lg px-6 py-3 hover:bg-[#e5961f]">+ Tambah Produk</a>
   </div>
 </div>
+
 {% endblock %}

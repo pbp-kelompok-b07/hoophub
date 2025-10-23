@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import User
-# from product.models import Product
+from catalog.models import Product
 
 # Create your models here.
 
@@ -18,7 +18,7 @@ class Report(models.Model):
     ]
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reports_made")
-    # reported_product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True)
+    reported_product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True)
     reported_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reports_received", null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     title = models.CharField(max_length=255)  # alasan singkat

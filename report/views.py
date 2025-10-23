@@ -1,4 +1,5 @@
 from pyexpat.errors import messages
+from django.contrib import messages
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
@@ -6,6 +7,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from report.forms import ReportForm
 from report.models import Report
+from review.models import Review
+from catalog.models import Product
 
 # Create your views here.
 LOGIN_URL = '/authentication/login/'
@@ -71,4 +74,4 @@ def delete_report(request, id):
     report = get_object_or_404(Report, pk=id)
     report.delete()
     messages.success(request, "Report deleted successfully!")
-    return HttpResponseRedirect(reverse('main:show_main'))
+    return HttpResponseRedirect(reverse('report:show_report'))

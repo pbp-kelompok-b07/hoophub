@@ -64,7 +64,7 @@
     <div class="mobile-menu hidden md:hidden border-t">
         <div class="px-2 pt-2 pb-3 space-y-1">
             <div class="flex flex-col space-y-2">
-                <a href="{% url 'catalog:product_view' %}">Products</a>
+                <a href="/">Products</a>
                 <a href="/">Checkout</a>
                 <a href="/">Review</a>
                 <a href="/">Wishlist</a>
@@ -75,7 +75,6 @@
     </div>
 
     <p id="logoutMessage" class="text-center text-sm mt-4 text-gray-600"> </p>
-    <form id="csrf-form" class="hidden">{% csrf_token %}</form>
 </nav>
 
 <script>
@@ -83,37 +82,24 @@
   const menu = document.querySelector(".mobile-menu");
   const message = document.getElementById("logoutMessage");
 
-  if (btn) {
-    btn.addEventListener("click", () => {
-      menu.classList.toggle("hidden");
-    });
-  }
-
-  // Ambil CSRF token yang valid dari form tersembunyi
-  const csrfInput = document.querySelector('#csrf-form input[name="csrfmiddlewaretoken"]');
-  const CSRF_TOKEN = csrfInput ? csrfInput.value : "";
+  btn.addEventListener("click", () => {
+    menu.classList.toggle("hidden");
+  });
 
   async function logout() {
-    try {
-      const response = await fetch("{% url 'authentication:logout' %}", {
-        method: "POST",
-        headers: {
-          "X-CSRFToken": CSRF_TOKEN,
-        },
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        message.textContent = "You have been logged out.";
-        setTimeout(() => {
-          window.location.href = "{% url 'main:show_main' %}";
-        }, 800);
-      } else {
-        message.textContent = data.message || "Logout failed.";
+    const response = await fetch("{% url 'authentication:logout' %}", {
+      method: "POST",
+      headers: {
+          "X-CSRFToken": "{{ csrf_token }}",
       }
-    } catch (e) {
-      message.textContent = "Network error. Please try again.";
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      setTimeout(() => {
+        window.location.href = "{% url 'main:show_main' %}";
+      }, 800);
     }
   }
 </script>
