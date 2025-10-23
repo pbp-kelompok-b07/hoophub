@@ -5,6 +5,9 @@
 <title>hoophub</title>
 
 <style>
+    main {
+        padding-top: 70px !important;
+    }
     .hero {
         flex-shrink: 0;
         background-image: url('{% static "image/main-page.jpg" %}');
@@ -97,57 +100,57 @@
         </div>
     </div>
 
-    <div class="trust-badge" style="margin-top: 100px">
-        <img src="{% static 'image/trust-badge.png' %}" alt="Trust badge">
-    </div>
+<div class="trust-badge" style="margin-top: 100px">
+    <img src="{% static 'image/trust-badge.png' %}" alt="Trust badge">
+</div>
 
-    <div class="feature-text">
-        <div style="text-align: center">
-            <h1>
-                <span style="">Explore our </span>
-                <span style="color: #EE9B00;">features</span>
-            </h1>
-        </div>
+<div class="feature-text">
+    <div style="text-align: center">
+        <h1>
+            <span>Explore our </span>
+            <span style="color: #EE9B00;">features</span>
+        </h1>
     </div>
+</div>
 
 <div class="features">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 px-4 md:px-20">
-    <!-- Catalog -->
-    <div class="features-card">
-        <div class="features-content">
-        <div class="features-title">
-            <span>Catalog</span>
-        </div>
-        <div class="features-detail">
-            <span>Browse our elite collection of on-court equipment, designed for every type of player. Find gear that elevates your game and filter easily by brand, size, and style!</span>
-        </div>
-        <a href="{% url 'catalog:product_list' %}" class="explore-button">Explore</a>
-        </div>
-    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-4 md:px-20">
 
-            <div class="features-card">
-                <div class="features-content">
-                    <div class="features-title">
-                        <span>Review</span>
-                    </div>
-                    <div class="features-detail">
-                        <span>Your experience on the court matters. Leave a rating and write a review to help fellow ballers make smarter choices. Your insights help everyone find the perfect equipment to elevate their game.</span>
-                    </div>
-                    <a href="{% url 'review:show_review' %}" class="explore-button">Explore</a>
+        <div class="features-card">
+            <div class="features-content">
+                <div class="features-title">
+                    <span>Catalog</span>
                 </div>
+                <div class="features-detail">
+                    <span>Browse our elite collection of on-court equipment, designed for every type of player. Find gear that elevates your game and filter easily by brand, size, and style!</span>
+                </div>
+                <a href="{% url 'catalog:product_list' %}" class="explore-button">Explore</a>
             </div>
+        </div>
 
-            <div class="features-card">
-                <div class="features-content">
-                    <div class="features-title">
-                        <span>Checkout</span>
-                    </div>
-                    <div class="features-detail">
-                        <span>Your gear is in the cart and you're ready to make your move. Our checkout process is designed like a perfect fast break, quick, intuitive, and straight to the finish.</span>
-                    </div>
-                    <a href="/" class="explore-button">Explore</a>
+        <div class="features-card">
+            <div class="features-content">
+                <div class="features-title">
+                    <span>Review</span>
                 </div>
+                <div class="features-detail">
+                    <span>Your experience on the court matters. Leave a rating and write a review to help fellow ballers make smarter choices. Your insights help everyone find the perfect equipment to elevate their game.</span>
+                </div>
+                <a href="{% url 'review:show_review' %}" class="explore-button">Explore</a>
             </div>
+        </div>
+
+        <div class="features-card">
+            <div class="features-content">
+                <div class="features-title">
+                    <span>Checkout</span>
+                </div>
+                <div class="features-detail">
+                    <span>Your gear is in the cart and you're ready to make your move. Our checkout process is designed like a perfect fast break, quick, intuitive, and straight to the finish.</span>
+                </div>
+                <a href="/" class="explore-button">Explore</a>
+            </div>
+        </div>
 
             <div class="features-card">
                 <div class="features-content">

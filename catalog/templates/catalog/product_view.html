@@ -3,11 +3,11 @@
 
 {% block content %}
 <main>
-  <div class="max-w-7xl mx-auto px-6 py-8">
-    <h1 class="text-4xl font-bold text-[#005C67] mb-6 text-center">HoopHub Catalog</h1>
-    <p class="text-center text-gray-600 mb-8">
-      Jelajahi produk terbaik dari <b>Nike</b>, <b>Adidas</b>, <b>Spalding</b>, <b>Wilson</b>, dan <b>TARMAK</b>.
-    </p>
+<div class="max-w-7xl mx-auto px-6 py-8">
+  <h1 class="text-4xl font-bold text-[#005C67] mb-6 text-center">hoophub Catalog</h1>
+  <p class="text-center text-gray-600 mb-8">
+    Find the best basketball product you ever have! <b>Nike</b>, <b>Adidas</b>, <b>Spalding</b>, <b>Wilson</b>, dan <b>TARMAK</b>.
+  </p>
 
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
@@ -20,28 +20,28 @@
       {% endif %}
     </div>
 
-    <!-- Filter -->
-    <form id="filter-form" class="flex flex-wrap justify-center gap-3 mb-10">
-      <input type="text" name="q" placeholder="Cari produk..." class="border rounded-lg p-2 w-48" />
-      <select name="category" class="border rounded-lg p-2">
-        <option value="">Semua Kategori</option>
-        <option value="Shoes">Sepatu</option>
-        <option value="Jersey">Jersey</option>
-        <option value="Ball">Bola</option>
-        <option value="Hoop">Ring</option>
-        <option value="Accessories">Aksesoris</option>
-      </select>
-      <input type="text" name="brand" placeholder="Merek" class="border rounded-lg p-2 w-40" />
-      <button type="submit" class="bg-[#005C67] text-white rounded-lg px-4 py-2 hover:bg-[#007681]">
-        Cari
-      </button>
-    </form>
+  <!-- Filter -->
+  <form id="filter-form" class="flex flex-wrap justify-center gap-3 mb-10">
+    <input type="text" name="q" placeholder="Cari produk..." class="border rounded-lg p-2 w-48" />
+    <select name="category" class="border rounded-lg p-2">
+      <option value="">All categories</option>
+      <option value="Shoes">Shoes</option>
+      <option value="Jersey">Jersey</option>
+      <option value="Ball">Ball</option>
+      <option value="Hoop">Hoop</option>
+      <option value="Accessories">Accessories</option>
+    </select>
+    <input type="text" name="brand" placeholder="Merek" class="border rounded-lg p-2 w-40" />
+    <button type="submit" class="bg-[#005C67] text-white rounded-lg px-4 py-2 hover:bg-[#007681]">
+      Find
+    </button>
+  </form>
 
-    <!-- Product Grid -->
-    <div id="product-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 text-center">
-      <p class="text-gray-400 col-span-3">Memuat produk...</p>
-    </div>
+  <!-- Product Grid -->
+  <div id="product-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 text-center">
+    <p class="text-gray-400 col-span-3">Loading products..</p>
   </div>
+</div>
 
   <!-- Modal Add Product (ADMIN ONLY) -->
   {% if user.is_staff %}
@@ -70,10 +70,10 @@
             <option value="Accessories">Accessories</option>
           </select>
 
-          <!-- 🟡 Deskripsi -->
-          <textarea name="description" id="description"
-                    placeholder="Product Description"
-                    class="w-full border rounded p-2 h-24 resize-none"></textarea>
+        <!-- Deskripsi -->
+        <textarea name="description" id="description"
+                  placeholder="Product Description"
+                  class="w-full border rounded p-2 h-24 resize-none"></textarea>
 
           <input type="number" name="price" id="price" placeholder="Price (Rp)"
                 class="w-full border rounded p-2" required>
@@ -96,7 +96,7 @@
     </div>
   </div>
 {% endif %}
-</main>
+
 <!-- JS -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -177,10 +177,11 @@ document.addEventListener("DOMContentLoaded", () => {
         hideModal();
         loadProducts();
       } else {
-        alert("Gagal menambahkan produk.");
+        alert("Add product failed.");
       }
     });
   }
 });
 </script>
+</main>
 {% endblock %}

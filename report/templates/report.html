@@ -8,7 +8,8 @@
 {% block content %}
 {% include 'navbar.html' %}
 <main>
-    <div class="pt-[40px] px-[40px]">
+    {% if user.is_authenticated %}
+    <div class="px-[40px]">
         <h2 style="padding: 0px 50px 0px 50px; font-weight: 700; color: #000; font-size:20px">Track your reports!</h2>
         <hr style="border: none; border-top: 2px dashed #005F73; margin: 10px 50px 30px 50px;">
 
@@ -46,5 +47,17 @@
             <p style="padding: 0px 50px;color: #666;">You haven’t submitted any reports yet.</p>
         {% endif %}
     </div>
+    {% else %} 
+    <div class="flex flex-col justify-center items-center h-[60vh] text-center px-4">
+        <h1 class="text-2xl font-bold text-gray-700 mb-2">You must be logged in.</h1>
+        <p class="text-gray-500 mb-2 max-w-md">
+            To see your report or write a new one, please log in to your account.
+        </p>
+        <a href="{% url 'authentication:login' %}"
+        class="bg-[#EE9B00] text-white py-3 px-5 rounded-full mt-1 hover:bg-[#CA6702] transition duration-300">
+            Login
+        </a>
+    </div>
+    {% endif %}
 </main> 
 {% endblock content %}

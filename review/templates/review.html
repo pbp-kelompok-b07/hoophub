@@ -101,7 +101,6 @@
         align-self: flex-end;
         margin-top: auto;
         display: flex;
-        color: #FFF;
     }
     .review-delete-button {
         background-color: #BB3E03;
@@ -113,29 +112,133 @@
         align-self: flex-end;
         margin-top: auto;
         display: flex;
+    }
+    .filter-button:hover {
+        background-color: #EE9B00;
+    }
+    .login-button {
+        background-color: #EE9B00;
         color: #FFF;
+        font-weight: 500;
+        padding: 10px 20px;
+        border-radius: 99px;
     }
 </style>
 {% endblock meta %}
 
 {% block content %}
-{% comment %} {% include 'navbar.html' %} {% endcomment %}
+{% include 'navbar.html' %}
+<main>
+<!-- tampilan untuk user yang sudah login -->
+{% if user.is_authenticated %}
     <div class="head">
-        <span class="content">Look back your reviews!</span>
+        <span class="content">
+            {% if 'admin' in request.user.username.lower %}
+                Look at all the reviews!
+            {% else %}
+                Look back at your reviews!
+            {% endif %}
+        </span>
+    </div>
+
+    <div class="flex justify-center items-center gap-2 md:gap-4 my-6 px-4">
+        <button class="filter-button bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-full hover:text-white transition" data-rating="all">
+            All
+        </button>
+        <button class="filter-button bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-full hover:text-white transition" data-rating="5">
+            5 ★
+        </button>
+        <button class="filter-button bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-full hover:text-white transition" data-rating="4">
+            4 ★
+        </button>
+        <button class="filter-button bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-full hover:text-white transition" data-rating="3">
+            3 ★
+        </button>
+        <button class="filter-button bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-full hover:text-white transition" data-rating="2">
+            2 ★
+        </button>
+        <button class="filter-button bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-full hover:text-white transition" data-rating="1">
+            1 ★
+        </button>
     </div>
 
     <div id="review-container" class="review-container"></div>
 
-    <h2 id="empty" style="text-align: center; display: none;">No reviews yet.</h2>
-    <h2 id="error" style="text-align: center; display: none;">Error loading reviews.</h2>
+    <div id="message-container" class="hidden flex flex-col flex-grow-1 justify-center items-center h-64 text-center">
+        <h2 id="empty" style="text-align: center; display: none;">No reviews yet.</h2>
+        <p id="error" style="text-align: center; display: none;">Products you review will appear here.</p>
+    </div>
 
 <script>
+    let reviews = []; // variabel untuk simpan semua review yang ada
+
     document.addEventListener('DOMContentLoaded', function() {
         loadReview();
+
+        document.querySelectorAll('.filter-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const ratingFilter = this.getAttribute('data-rating');
+                filterReview(ratingFilter);
+
+                // ubah warna button kalau di-klik
+                document.querySelectorAll('.filter-button').forEach(button => {
+                    button.classList.remove('text-white', 'bg-[#EE9B00]');
+                    button.classList.add('bg-gray-200', 'text-gray-700');
+                });
+                this.classList.remove('bg-gray-200', 'text-gray-700');
+                this.classList.add('text-white', 'bg-[#EE9B00]');
+            })
+        })
     })
+
+    function filterReview(rating) {
+        const reviewContainer = document.getElementById('review-container');
+        const messageContainer = document.getElementById('message-container');
+        const emptyContainer = document.getElementById('empty');
+        const errorContainer = document.getElementById('error');
+
+        reviewContainer.innerHTML = '';
+
+        // kalau all, tampilkan semua review, kalau tidak, tampilkan yang sesuai rating saja
+        const filteredReview = (rating === 'all') ? reviews : reviews.filter(review => review.rating == rating);
+
+        if (filteredReview.length === 0) { // kalau setelah filter tidak ada review yang sesuai, tampilkan pesan empty
+            messageContainer.classList.remove('hidden');
+            reviewContainer.style.display = 'none';
+            emptyContainer.style.display = 'block';
+        }
+        else {
+            messageContainer.classList.add('hidden');
+            reviewContainer.style.display = 'block';
+            emptyContainer.style.display = 'none';
+            reviewContainer.innerHTML = ''; // dari review yang udah difilter sesuai rating, tampilkan reviewnya (kalau ada)
+            filteredReview.forEach(review => {reviewContent = `
+                <div class="review-card flex flex-col md:flex-row">
+                    <img class="review-product-image w-full h-auto object-cover rounded-lg md:w-48 h-48" src="${review.product.image}" alt="Product image">
+                    <div class="review-details">
+                        <h2 class="review-product-name">${review.product.name}</h2>
+                        
+                        <p class="review-product-price">Rp ${new Intl.NumberFormat('id-ID').format(review.product.price)}</p>
+                        <p class="review-date">${review.date}</p>
+                        <div class="rating">
+                            ${stars(review.rating)}
+                        </div>
+                        <h3 class="review-message">${review.review}</h3>
+                    </div>
+                    <div class="review-action">
+                        <button class="review-edit-button" onclick="showEditReviewModal('${review.id}')">Edit</button>
+                        <button class="review-delete-button" onclick="showDeleteReviewModal('${review.id}')">Delete</button>
+                    </div>
+                </div>
+            `;
+                reviewContainer.innerHTML += reviewContent;
+            })
+        }
+    }
 
     async function loadReview() {
         const reviewContainer = document.getElementById('review-container');
+        const messageContainer = document.getElementById('message-container');
         const emptyContainer = document.getElementById('empty');
         const errorContainer = document.getElementById('error');
 
@@ -146,39 +249,15 @@
             throw new Error('Failed to fetch review data from server.');
             }
 
-            const reviews = await response.json();
+            reviews = await response.json(); // simpan semua data review di variabel
+            filterReview('all'); // secara default, akan ditampilkan semua review terlebih dahulu
 
-            if (reviews.length === 0) { // belum ada review
-                reviewContainer.style.display = 'none';
-                emptyContainer.style.display = 'block';
-            }
-            else { // sudah ada review
-                reviewContainer.innerHTML = '';
-                reviews.forEach(review => {reviewContent = `
-                    <div class="review-card flex flex-col md:flex-row">
-                        <img class="review-product-image w-full h-auto object-cover rounded-lg md:w-48 h-48" src="${review.product.image}" alt="Product image">
-                        <div class="review-details">
-                            <h2 class="review-product-name">${review.product.name}</h2>
-                            
-                            <p class="review-product-price">Rp ${new Intl.NumberFormat('id-ID').format(review.product.price)}</p>
-                            <p class="review-date">${review.date}</p>
-                            <div class="rating">
-                                ${stars(review.rating)}
-                            </div>
-                            <h3 class="review-message">${review.review}</h3>
-                        </div>
-                        <div class="review-action">
-                            <button class="review-edit-button" onclick="showEditReviewModal('${review.id}')">Edit</button>
-                            <button class="review-delete-button" onclick="showDeleteReviewModal('${review.id}')">Delete</button>
-                        </div>
-                    </div>
-                `;
-                    reviewContainer.innerHTML += reviewContent;
-                })
-            }
+            // button 'all' secara default "di-klik", jadi warnanya berbeda
+            document.querySelector('.filter-button[data-rating="all"]').classList.remove('bg-gray-200', 'text-gray-700');
+            document.querySelector('.filter-button[data-rating="all"]').classList.add('text-white', 'bg-[#EE9B00]');
         }
         catch (error) {
-            errorContainer.style.display = 'block';
+            errorContainer.style.display = 'block'; // tampilkan pesan, kalau error
         }
     }
 
@@ -190,5 +269,20 @@
         return stars;
     }
 </script>
+
+<!-- tampilan untuk user yg blm login -->
+{% else %} 
+    <div class="flex flex-col justify-center items-center h-[60vh] text-center px-4">
+        <h1 class="text-2xl font-bold text-gray-700 mb-2">You must be logged in.</h1>
+        <p class="text-gray-500 mb-2 max-w-md">
+            To see your reviews or write a new one, please log in to your account.
+        </p>
+        <a href="{% url 'authentication:login' %}" class="login-button hover:bg-[#CA6702] transition">
+            Login
+        </a>
+    </div>
+
+{% endif %}
+</main>
 {% endblock content %}
 

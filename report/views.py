@@ -13,16 +13,21 @@ from catalog.models import Product
 # Create your views here.
 LOGIN_URL = '/authentication/login/'
 
-@login_required(login_url=LOGIN_URL)
 def show_report(request):
+    if request.user.is_authenticated:
+        if 'admin' in request.user.username.lower():
+            report_list = Report.objects.all()
+        else:
+            report_list = Report.objects.filter(reporter=request.user)
 
-    report_list = Report.objects.filter(reporter=request.user)
+        context = {
+            'report_list': report_list,
+            'last_login': request.COOKIES.get('last_login', 'Never')
+        }
+        return render(request, 'report.html', context)
+    else :
+        return render(request, "report.html")
 
-    context = {
-        'report_list': report_list,
-        'last_login': request.COOKIES.get('last_login', 'Never')
-    }
-    return render(request, 'report.html', context)
 
 @login_required(login_url=LOGIN_URL)
 def create_report_ajax(request):

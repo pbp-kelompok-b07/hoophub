@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('catalog', '0002_alter_product_image'),
+        ('catalog', '0001_initial'),
         ('report', '0003_initial'),
     ]
 
