@@ -29,7 +29,7 @@ def show_json(request):
     data = [
         {
             'id': str(review.id),
-            'date': review.date.strftime("%d %B %Y, %H:%M"),
+            'date': review.date.strftime("%d %B %Y"),
             'review': review.review,
             'rating': review.rating,
             'product': {
