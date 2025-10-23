@@ -46,7 +46,7 @@ def product_create(request):
         name = request.POST.get("name")
         brand = request.POST.get("brand")
         category = request.POST.get("category")
-        description = request.POST.get("description")  # ✅ deskripsi ikut dikirim
+        description = request.POST.get("description") 
         price = request.POST.get("price")
         stock = request.POST.get("stock")
         image = request.POST.get("image")
