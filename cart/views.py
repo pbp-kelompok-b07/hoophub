@@ -7,7 +7,8 @@ from django.http import JsonResponse
 from catalog.models import Product 
 from invoice.models import Invoice
 import datetime
-import json
+from django.http import HttpResponseRedirect
+from django.shortcuts import render, redirect
 
 def show_cart(request):
     cart_data = request.session.get('cart', {})
@@ -43,7 +44,6 @@ def show_cart(request):
 
 @login_required 
 def show_checkout(request):
-    
     if request.method == 'POST':
         
         cart_data = request.session.get('cart', {})
@@ -115,15 +115,40 @@ def show_checkout(request):
     else:
         return redirect('cart:show_cart')
     
+@login_required
 @require_POST
-def remove_from_cart(request, item_id):
+def remove_from_cart(request, id):
+    """
+    Menghapus item dari keranjang (session) dan me-redirect
+    kembali ke halaman keranjang.
+    """
     cart = request.session.get('cart', {})
     
-    product_id_str = str(item_id)
+    product_id_str = str(id) 
     
     if product_id_str in cart:
         del cart[product_id_str]
         
         request.session['cart'] = cart
+        request.session.modified = True
         
-    return redirect('cart:show_cart')
+    return HttpResponseRedirect(reverse('cart:show_cart'))
+
+@login_required
+@require_POST
+def add_to_cart(request, product_id):
+    cart = request.session.get('cart', {})
+    
+    quantity = int(request.POST.get('quantity', 1))
+    
+    product_id_str = str(product_id)
+    
+    if product_id_str in cart:
+        cart[product_id_str]['quantity'] += quantity
+    else:
+        cart[product_id_str] = {'quantity': quantity}
+        
+    request.session['cart'] = cart
+    request.session.modified = True
+    
+    return redirect(request.META.get('HTTP_REFERER', 'main:show_main'))

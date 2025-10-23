@@ -3,30 +3,14 @@ from .models import Product
 from django import forms
 from django.http import JsonResponse
 
-
-# form untuk CRUD
+# ---------- FORM ----------
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = '__all__'
-        
-def product_view(request):
-    query = request.GET.get('q')
-    category = request.GET.get('category')
-    brand = request.GET.get('brand')
+        exclude = ['rating']
 
-    products = Product.objects.filter(is_available=True)
 
-    if query:
-        products = products.filter(name__icontains=query)
-    if category:
-        products = products.filter(category=category)
-    if brand:
-        products = products.filter(brand__icontains=brand)
-
-    return render(request, 'catalog/product_view.html', {'products': products})
-
-# view list + filter
+# ---------- VIEW: LIST + FILTER ----------
 def product_list(request):
     query = request.GET.get('q')
     category = request.GET.get('category')
@@ -49,35 +33,65 @@ def product_list(request):
 
     return render(request, 'catalog/product_list.html', {'products': products})
 
-# view create
-def product_create(request):
-    form = ProductForm(request.POST or None, request.FILES or None)
-    if form.is_valid():
-        form.save()
-        return redirect('catalog:product_list')
-    return render(request, 'catalog/product_form.html', {'form': form})
 
-# view update
+# ---------- VIEW: DETAIL ----------
+def product_detail(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    return render(request, 'catalog/product_detail.html', {'p': product})
+
+
+# ---------- VIEW: CREATE (untuk AJAX modal) ----------
+def product_create(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        brand = request.POST.get("brand")
+        category = request.POST.get("category")
+        description = request.POST.get("description") 
+        price = request.POST.get("price")
+        stock = request.POST.get("stock")
+        image = request.POST.get("image")
+        release_date = request.POST.get("release_date")
+        is_available = request.POST.get("is_available") == "on"
+
+        Product.objects.create(
+            name=name,
+            brand=brand,
+            category=category,
+            description=description,
+            price=price,
+            stock=stock,
+            image=image,
+            release_date=release_date,
+            is_available=is_available,
+        )
+        return JsonResponse({"success": True})
+    return JsonResponse({"success": False, "message": "Invalid request"}, status=400)
+
+
+# ---------- VIEW: UPDATE ----------
 def product_update(request, pk):
     product = get_object_or_404(Product, pk=pk)
-    form = ProductForm(request.POST or None, request.FILES or None, instance=product)
-    if form.is_valid():
-        form.save()
-        return redirect('catalog:product_list')
-    return render(request, 'catalog/product_form.html', {'form': form, 'product': product})
+    if request.method == "POST":
+        form = ProductForm(request.POST or None, request.FILES or None, instance=product)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({"success": True})
+    return JsonResponse({"success": False, "message": "Invalid request"}, status=400)
 
-# view delete
+
+# ---------- VIEW: DELETE ----------
 def product_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == 'POST':
         product.delete()
-        return redirect('catalog:product_list')
-    return render(request, 'catalog/product_delete.html', {'product': product})
-# === endpoint JSON untuk AJAX ===
+        return JsonResponse({"success": True})
+    return JsonResponse({"success": False, "message": "Invalid request"}, status=400)
+
+
+# ---------- VIEW: JSON (untuk grid di frontend) ----------
 def products_json(request):
     products = Product.objects.filter(is_available=True).values(
-        "id", "name", "brand", "category", "price", "rating",
-        "release_date", "is_available", "image"
+        "id", "name", "brand", "category", "price",
+        "release_date", "is_available", "image", "description"
     )
-    data = list(products)
-    return JsonResponse(data, safe=False)
+    return JsonResponse(list(products), safe=False)
