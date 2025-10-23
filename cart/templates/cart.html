@@ -1,7 +1,53 @@
 {% extends 'base.html' %}
+
 {% block meta %}
     <title>Shopping Cart</title>
+    
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            font-family: 'Poppins', sans-serif;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 25px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 700px;
+            border-radius: 8px;
+            position: relative;
+        }
+        .modal-close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .modal-close:hover,
+        .modal-close:focus {
+            color: #000;
+            text-decoration: none;
+            outline: none;
+        }
+        .form-input {
+            width: 100%; 
+            padding: 8px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px;
+        }
+    </style>
 {% endblock meta %}
+
 
 {% block content %}
 {% include 'navbar.html' %}
@@ -73,13 +119,137 @@
             Total Belanja: Rp{{ total_cart_price }}
         </h2>
         
-        <a href="{% url 'checkout:show_checkout' %}" class="btn-checkout-total"
-           style="background-color: #EE9B00; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-size: 1.1rem; font-weight: bold;">
+        <button id="openCheckoutModal" class="btn-checkout-total"
+           style="background-color: #EE9B00; color: white; padding: 12px 25px; text-decoration: none; border: none; border-radius: 5px; font-size: 1.1rem; font-weight: bold; cursor: pointer;">
             Lanjut ke Checkout
-        </a>
+        </button>
     </div>
     {% endif %}
 
 </div>
+
+<div id="checkoutModal" class="modal">
+    <div class="modal-content">
+        <span id="closeCheckoutModal" class="modal-close">&times;</span>
+        
+        <h2 style="font-weight: bold; margin-bottom: 20px;">Formulir Checkout</h2>
+
+        <form id="checkoutForm" action="{% url 'cart:show_checkout' %}" method="POST">
+            {% csrf_token %}
+
+            <div class="summary" style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
+                <h4 style="font-weight: bold;">Ringkasan Belanja</h4>
+                <ul style="list-style-type: none; padding-left: 0;">
+                    {% for item in cart_items %}
+                    <li style="display: flex; justify-content: space-between;">
+                        <span>{{ item.product.name }} (x{{ item.quantity }})</span>
+                        <span>Rp{{ item.item_total }}</span>
+                    </li>
+                    {% endfor %}
+                    <li style="display: flex; justify-content: space-between; font-weight: bold; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px;">
+                        <span>TOTAL</span>
+                        <span>Rp{{ total_cart_price }}</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="checkoutError" style="color: red; background: #ffe0e0; padding: 10px; border-radius: 5px; margin-bottom: 15px; display: none;">
+                </div>
+
+            <div style="margin-bottom: 15px;">
+                <label for="full_name" style="display: block; margin-bottom: 5px; font-weight: bold;">Nama Lengkap</label>
+                <input type="text" name="full_name" id="full_name" required class="form-input">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label for="address" style="display: block; margin-bottom: 5px; font-weight: bold;">Alamat</label>
+                <input type="text" name="address" id="address" required class="form-input">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label for="city" style="display: block; margin-bottom: 5px; font-weight: bold;">Kota</label>
+                <input type="text" name="city" id="city" required class="form-input">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label for="postal_code" style="display: block; margin-bottom: 5px; font-weight: bold;">Kode Pos</label>
+                <input type="text" name="postal_code" id="postal_code" required class="form-input">
+            </div>
+
+            <button id="submitCheckoutBtn" type="submit" 
+                    style="background-color: #007bff; color: white; padding: 12px 25px; border: none; border-radius: 5px; font-size: 1.1rem; font-weight: bold; cursor: pointer; width: 100%;">
+                Bayar Sekarang
+            </button>
+        </form>
+
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        var modal = document.getElementById("checkoutModal");
+        var btnOpen = document.getElementById("openCheckoutModal");
+        var btnClose = document.getElementById("closeCheckoutModal");
+
+        if (btnOpen) {
+            btnOpen.onclick = function() {
+                modal.style.display = "block";
+            }
+        }
+        if (btnClose) {
+            btnClose.onclick = function() {
+                modal.style.display = "none";
+            }
+        }
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        const form = document.getElementById('checkoutForm');
+        const errorDiv = document.getElementById('checkoutError');
+        const submitBtn = document.getElementById('submitCheckoutBtn');
+        
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault(); 
+                
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = "Memproses...";
+                errorDiv.style.display = 'none';
+
+                const formData = new FormData(form);
+                const url = form.action;
+
+                fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    }
+                })
+                .then(response => {
+                    return response.json().then(data => ({status: response.status, body: data}));
+                })
+                .then(data => {
+                    if (data.body.status === 'success') {
+                        window.location.href = data.body.redirect_url;
+                    } else {
+                        errorDiv.innerHTML = data.body.message;
+                        errorDiv.style.display = 'block';
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = "Bayar Sekarang";
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    errorDiv.innerHTML = 'Terjadi kesalahan jaringan. Silakan coba lagi.';
+                    errorDiv.style.display = 'block';
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = "Bayar Sekarang";
+                });
+            });
+        }
+    });
+</script>
 
 {% endblock content %}
