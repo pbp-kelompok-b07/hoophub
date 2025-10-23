@@ -4,7 +4,6 @@ from django.core.management.base import BaseCommand, CommandError
 from catalog.models import Product
 from django.db import transaction
 
-# Helper to parse date; adjust the formats to match your CSV
 def parse_date(s):
     if not s:
         return None
@@ -40,7 +39,7 @@ class Command(BaseCommand):
                 reader = csv.DictReader(f)
                 if not reader.fieldnames:
                     raise CommandError("CSV has no header row.")
-                required = {"name", "brand"}
+                required = {"Product Name", "Brand"}
                 missing = required - set(h.strip() for h in reader.fieldnames)
                 if missing:
                     raise CommandError(f"CSV missing required headers: {missing}")
@@ -49,30 +48,26 @@ class Command(BaseCommand):
 
                 for row in reader:
                     # Normalize/clean inputs from CSV
-                    name = (row.get("name") or "").strip()
-                    brand = (row.get("brand") or "").strip()
-                    category = (row.get("category") or "").strip() or None
-                    description = (row.get("description") or "").strip() or ""
-                    image = (row.get("image") or "").strip() or None
-                    link = (row.get("link") or "").strip() or None  # optional
+                    name = (row.get("Product Name") or "").strip()
+                    brand = (row.get("Brand") or "").strip()
+                    category = (row.get("Category") or "").strip() or None
+                    description = (row.get("Description") or "").strip() or ""
+                    image = (row.get("Link") or "").strip() or None
                     release_date = None
                     if row.get("release_date"):
                         release_date = parse_date(row["release_date"])
 
-                    # Price & stock with safety
                     def to_int(val, default=0):
                         try:
                             return int(str(val).replace(".", "").replace(",", "").strip())
                         except Exception:
                             return default
 
-                    price = to_int(row.get("price"), 0)
-                    stock = to_int(row.get("stock"), 0)
+                    price = to_int(row.get("Price"), 0)
+                    stock = to_int(row.get("Stock"), 0)
 
-                    # Decide availability: if stock provided use it; else fall back to >0 price etc.
-                    is_available = stock > 0 if row.get("stock") is not None else True
+                    is_available = stock > 0 if row.get("Stock") is not None else True
 
-                    # Upsert by (name, brand)
                     if do_update:
                         obj, was_created = Product.objects.update_or_create(
                             name=name,
