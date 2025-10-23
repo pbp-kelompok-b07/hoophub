@@ -1,173 +1,86 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>hoophub — Invoices</title>
+{% endblock meta %}
+
 {% block content %}
-{% include "navbar.html" %}
+{% include 'navbar.html' %}
 
-<style>
-  .orders-wrap {
-    width: 100%;
-    margin: 24px 0;
-    padding: 0;
-  }
+<main>
+  <div class="pt-[130px] px-[40px]">
+    <h2 style="padding: 0px 50px 0px 50px; font-weight: 700; color: #000; font-size:20px">
+      Track your past orders!
+    </h2>
+    <hr style="border: none; border-top: 2px dashed #005F73; margin: 10px 50px 30px 50px;">
 
-  .orders-head {
-    font-weight: 700;
-    font-size: 22px;
-    margin-bottom: 12px;
-  }
-
-  .dash {
-    border-top: 3px dashed #189ab4;
-    margin: 8px 0 24px;
-  }
-
-  .order-item {
-    display: flex;
-    gap: 24px;
-    align-items: flex-start;
-    margin: 24px 0 36px;
-  }
-
-  .order-img {
-    width: 160px;
-    height: 160px;
-    flex: 0 0 160px;
-    object-fit: cover;
-    border-radius: 10px;
-  }
-
-  .order-body {
-    flex: 1 1 auto;
-  }
-
-  .order-title {
-    font-weight: 700;
-    line-height: 1.35;
-    margin-bottom: 6px;
-  }
-
-  .order-sub {
-    color: #222;
-    white-space: pre-line;
-  }
-
-  .order-price {
-    font-weight: 700;
-    margin: 10px 0;
-  }
-
-  .order-desc {
-    color: #555;
-    max-width: 720px;
-  }
-
-  .order-actions {
-    display: flex;
-    gap: 12px;
-    margin-left: auto;
-  }
-
-  .btn {
-    border: none;
-    border-radius: 20px;
-    padding: 10px 16px;
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, .15);
-  }
-
-  .btn-primary {
-    background: #f4a100;
-    color: #fff;
-  }
-
-  .btn-login {
-    background: #f4a100;
-    color: #fff;
-    display: inline-block;
-  }
-
-  .btn-danger {
-    background: #c63d0f;
-    color: #fff;
-  }
-
-  .row {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-  }
-
-  .row-space {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  @media (max-width:700px) {
-    .order-item {
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .order-actions {
-      justify-content: flex-start;
-    }
-
-    .order-img {
-      width: 120px;
-      height: 120px;
-      flex-basis: 120px;
-    }
-  }
-</style>
-
-<div class="max-w-6xl mx-auto px-6 lg:px-8">
-  <div class="orders-wrap md:pl-10">
     {% if user.is_authenticated %}
-      <div class="orders-head">Track your past orders!</div>
-      <div class="dash"></div>
+      {% if invoices %}
+        {% for inv in invoices %}
+          <div style="background-color: #E0E0E0; border-radius: 16px; padding: 20px 30px; margin: 0 auto 20px auto; width: 95%; min-height: 200px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px;">
+              
+              <!-- Kiri: gambar + info produk -->
+              <div style="display: flex; align-items: flex-start; gap: 16px;">
+                {% if inv.product.image %}
+                  <img src="{{ inv.product.image.url }}"
+                       alt="{{ inv.product.name }}"
+                       style="width: 120px; height: 120px; object-fit: cover; border-radius: 10px;">
+                {% endif %}
 
-      {% for inv in invoices %}
-        <div class="order-item">
-          {% if inv.product.image %}
-            <img class="order-img" src="{{ inv.product.image.url }}" alt="{{ inv.product.name }}">
-          {% endif %}
+                <div>
+                  <h3 style="font-weight: 700; margin: 0;">
+                    {{ inv.product.brand|default_if_none:"" }} {{ inv.product.name }}
+                  </h3>
+                  <p style="color: #4A4A4A; margin: 6px 0 10px 0; white-space: pre-line;">
+                    {{ inv.product.subtitle|default:"" }}
+                  </p>
 
-          <div class="order-body">
-            <div class="row-space">
-              <div class="order-title">
-                {{ inv.product.brand|default_if_none:"" }} {{ inv.product.name }}<br>
-                <span class="order-sub">{{ inv.product.subtitle|default:"" }}</span>
+                  <p style="font-weight: 700; margin: 0 0 8px 0;">
+                    ₹{{ inv.product.price|floatformat:2 }}
+                  </p>
+
+                  <p style="color: #555; max-width: 720px; margin: 0;">
+                    {{ inv.product.description|default:"Inspired by the team's redeeming run in Beijing, this edition of the Kobe 4 Protro returns with the same winning spirit.." }}
+                  </p>
+                </div>
               </div>
 
-              <div class="order-actions">
+              <!-- Kanan: aksi -->
+              <div style="display: flex; gap: 10px; flex-shrink: 0;">
                 <form action="{% url 'invoice:reorder' inv.id %}" method="post">
                   {% csrf_token %}
-                  <button class="btn btn-primary" type="submit">Order again</button>
+                  <button type="submit"
+                          style="background-color: #EE9B00; color: white; padding: 6px 16px; border-radius: 99px; font-weight: 500; border: none; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                    Order again
+                  </button>
                 </form>
+
                 <form action="{% url 'invoice:delete' inv.id %}" method="post" onsubmit="return confirm('Delete this invoice?')">
                   {% csrf_token %}
-                  <button class="btn btn-danger" type="submit">Delete</button>
+                  <button type="submit"
+                          style="background-color: #BB3E03; color: white; padding: 6px 16px; border-radius: 99px; font-weight: 500; border: none; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                    Delete
+                  </button>
                 </form>
               </div>
             </div>
-
-            <div class="order-price">₹{{ inv.product.price|floatformat:2 }}</div>
-            <div class="order-desc">
-              {{ inv.product.description|default:"Inspired by the team's redeeming run in Beijing, this edition of the Kobe 4 Protro returns with the same winning spirit.." }}
-            </div>
           </div>
-        </div>
-      {% empty %}
-        <p>No invoices yet.</p>
-      {% endfor %}
+        {% endfor %}
+      {% else %}
+        <p style="padding: 0px 50px; color: #666;">No invoices yet.</p>
+      {% endif %}
     {% else %}
-      <div class="orders-head">You are not logged in 😅</div>
-      <div class="dash"></div>
-      <p>Please log in first to view your invoices.</p>
-      <a href="{% url 'authentication:login' %}" class="btn btn-login">Login Now</a>
+      <p style="padding: 0px 50px; color: #666;">You are not logged in 😅</p>
+      <div style="padding: 10px 50px;">
+        <a href="{% url 'authentication:login' %}"
+           style="background-color: #EE9B00; color: white; padding: 6px 16px; border-radius: 99px; font-weight: 500; text-decoration: none; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+          Login Now
+        </a>
+      </div>
     {% endif %}
   </div>
-</div>
+</main>
 
-{% endblock %}
+{% endblock content %}
