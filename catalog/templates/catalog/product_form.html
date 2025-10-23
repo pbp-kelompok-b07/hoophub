@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 {% include 'navbar.html' %}
+<main>
 <div class="max-w-2xl mx-auto py-10">
   <h2 class="text-3xl font-bold text-[#005C67] mb-8 text-center">
     {% if product %}Edit Produk{% else %}Tambah Produk Baru{% endif %}
@@ -14,5 +15,6 @@
     </div>
   </form>
 </div>
+</main>
 
 {% endblock %}

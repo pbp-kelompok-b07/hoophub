@@ -75,3 +75,14 @@ def delete_report(request, id):
     report.delete()
     messages.success(request, "Report deleted successfully!")
     return HttpResponseRedirect(reverse('report:show_report'))
+
+@login_required(login_url=LOGIN_URL)
+def report_detail(request, id):
+    report = get_object_or_404(Report, id=id, reporter=request.user)
+
+    context = {
+        'report': report,
+        'last_login': request.COOKIES.get('last_login', 'Never')
+    }
+
+    return render(request, 'report_detail.html', context)

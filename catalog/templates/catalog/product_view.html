@@ -2,100 +2,101 @@
 {% load static %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-6 py-8">
-  <h1 class="text-4xl font-bold text-[#005C67] mb-6 text-center">HoopHub Catalog</h1>
-  <p class="text-center text-gray-600 mb-8">
-    Jelajahi produk terbaik dari <b>Nike</b>, <b>Adidas</b>, <b>Spalding</b>, <b>Wilson</b>, dan <b>TARMAK</b>.
-  </p>
+<main>
+  <div class="max-w-7xl mx-auto px-6 py-8">
+    <h1 class="text-4xl font-bold text-[#005C67] mb-6 text-center">HoopHub Catalog</h1>
+    <p class="text-center text-gray-600 mb-8">
+      Jelajahi produk terbaik dari <b>Nike</b>, <b>Adidas</b>, <b>Spalding</b>, <b>Wilson</b>, dan <b>TARMAK</b>.
+    </p>
 
-  <!-- Header -->
-  <div class="flex justify-between items-center mb-6">
-    <h2 class="text-2xl font-semibold text-[#005C67]">Product List</h2>
-    {% if user.is_staff %}
-    <button id="openAddModal"
-            class="bg-[#EE9B00] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#d98f00] transition">
-      + Add Product
-    </button>
-    {% endif %}
-  </div>
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-semibold text-[#005C67]">Product List</h2>
+      {% if user.is_staff %}
+      <button id="openAddModal"
+              class="bg-[#EE9B00] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#d98f00] transition">
+        + Add Product
+      </button>
+      {% endif %}
+    </div>
 
-  <!-- Filter -->
-  <form id="filter-form" class="flex flex-wrap justify-center gap-3 mb-10">
-    <input type="text" name="q" placeholder="Cari produk..." class="border rounded-lg p-2 w-48" />
-    <select name="category" class="border rounded-lg p-2">
-      <option value="">Semua Kategori</option>
-      <option value="Shoes">Sepatu</option>
-      <option value="Jersey">Jersey</option>
-      <option value="Ball">Bola</option>
-      <option value="Hoop">Ring</option>
-      <option value="Accessories">Aksesoris</option>
-    </select>
-    <input type="text" name="brand" placeholder="Merek" class="border rounded-lg p-2 w-40" />
-    <button type="submit" class="bg-[#005C67] text-white rounded-lg px-4 py-2 hover:bg-[#007681]">
-      Cari
-    </button>
-  </form>
-
-  <!-- Product Grid -->
-  <div id="product-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 text-center">
-    <p class="text-gray-400 col-span-3">Memuat produk...</p>
-  </div>
-</div>
-
-<!-- Modal Add Product (ADMIN ONLY) -->
-{% if user.is_staff %}
-<div id="productModal"
-     class="fixed inset-0 bg-black bg-opacity-40 hidden flex justify-center items-center z-50 transition-all">
-  <div class="bg-white rounded-2xl shadow-2xl w-96 p-6 transform scale-95 opacity-0 transition-all duration-300"
-       id="modalCard">
-    <h2 id="modalTitle" class="text-xl font-bold text-[#005C67] mb-4 text-center">Add Product</h2>
-
-    <form id="productForm">
-      {% csrf_token %}
-      <input type="hidden" name="id" id="productId">
-
-      <div class="space-y-3">
-        <input type="text" name="name" id="name" placeholder="Name of Product"
-               class="w-full border rounded p-2" required>
-        <input type="text" name="brand" id="brand" placeholder="Brand"
-               class="w-full border rounded p-2" required>
-
-        <select name="category" id="category" class="w-full border rounded p-2" required>
-          <option value="">Category</option>
-          <option value="Shoes">Shoes</option>
-          <option value="Jersey">Jersey</option>
-          <option value="Ball">Ball</option>
-          <option value="Hoop">Hoop</option>
-          <option value="Accessories">Accessories</option>
-        </select>
-
-        <!-- 🟡 Deskripsi -->
-        <textarea name="description" id="description"
-                  placeholder="Product Description"
-                  class="w-full border rounded p-2 h-24 resize-none"></textarea>
-
-        <input type="number" name="price" id="price" placeholder="Price (Rp)"
-               class="w-full border rounded p-2" required>
-        <input type="number" name="stock" id="stock" placeholder="Stock"
-               class="w-full border rounded p-2" required>
-        <input type="url" name="image" id="image" placeholder="Link Image (URL)"
-               class="w-full border rounded p-2">
-        <input type="date" name="release_date" id="release_date"
-               class="w-full border rounded p-2">
-      </div>
-
-      <div class="flex justify-end gap-2 mt-5">
-        <button type="button" id="closeModal" class="text-gray-500 hover:text-gray-700">Cancel</button>
-        <button type="submit" id="saveBtn"
-                class="bg-[#005C67] text-white px-4 py-2 rounded hover:bg-[#007681] transition">
-          Save
-        </button>
-      </div>
+    <!-- Filter -->
+    <form id="filter-form" class="flex flex-wrap justify-center gap-3 mb-10">
+      <input type="text" name="q" placeholder="Cari produk..." class="border rounded-lg p-2 w-48" />
+      <select name="category" class="border rounded-lg p-2">
+        <option value="">Semua Kategori</option>
+        <option value="Shoes">Sepatu</option>
+        <option value="Jersey">Jersey</option>
+        <option value="Ball">Bola</option>
+        <option value="Hoop">Ring</option>
+        <option value="Accessories">Aksesoris</option>
+      </select>
+      <input type="text" name="brand" placeholder="Merek" class="border rounded-lg p-2 w-40" />
+      <button type="submit" class="bg-[#005C67] text-white rounded-lg px-4 py-2 hover:bg-[#007681]">
+        Cari
+      </button>
     </form>
-  </div>
-</div>
-{% endif %}
 
+    <!-- Product Grid -->
+    <div id="product-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 text-center">
+      <p class="text-gray-400 col-span-3">Memuat produk...</p>
+    </div>
+  </div>
+
+  <!-- Modal Add Product (ADMIN ONLY) -->
+  {% if user.is_staff %}
+  <div id="productModal"
+      class="fixed inset-0 bg-black bg-opacity-40 hidden flex justify-center items-center z-50 transition-all">
+    <div class="bg-white rounded-2xl shadow-2xl w-96 p-6 transform scale-95 opacity-0 transition-all duration-300"
+        id="modalCard">
+      <h2 id="modalTitle" class="text-xl font-bold text-[#005C67] mb-4 text-center">Add Product</h2>
+
+      <form id="productForm">
+        {% csrf_token %}
+        <input type="hidden" name="id" id="productId">
+
+        <div class="space-y-3">
+          <input type="text" name="name" id="name" placeholder="Name of Product"
+                class="w-full border rounded p-2" required>
+          <input type="text" name="brand" id="brand" placeholder="Brand"
+                class="w-full border rounded p-2" required>
+
+          <select name="category" id="category" class="w-full border rounded p-2" required>
+            <option value="">Category</option>
+            <option value="Shoes">Shoes</option>
+            <option value="Jersey">Jersey</option>
+            <option value="Ball">Ball</option>
+            <option value="Hoop">Hoop</option>
+            <option value="Accessories">Accessories</option>
+          </select>
+
+          <!-- 🟡 Deskripsi -->
+          <textarea name="description" id="description"
+                    placeholder="Product Description"
+                    class="w-full border rounded p-2 h-24 resize-none"></textarea>
+
+          <input type="number" name="price" id="price" placeholder="Price (Rp)"
+                class="w-full border rounded p-2" required>
+          <input type="number" name="stock" id="stock" placeholder="Stock"
+                class="w-full border rounded p-2" required>
+          <input type="url" name="image" id="image" placeholder="Link Image (URL)"
+                class="w-full border rounded p-2">
+          <input type="date" name="release_date" id="release_date"
+                class="w-full border rounded p-2">
+        </div>
+
+        <div class="flex justify-end gap-2 mt-5">
+          <button type="button" id="closeModal" class="text-gray-500 hover:text-gray-700">Cancel</button>
+          <button type="submit" id="saveBtn"
+                  class="bg-[#005C67] text-white px-4 py-2 rounded hover:bg-[#007681] transition">
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endif %}
+</main>
 <!-- JS -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {

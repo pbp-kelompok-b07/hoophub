@@ -2,6 +2,7 @@
 {% block content %}
 {% include 'navbar.html' %}
 
+<main>
 <div class="max-w-lg mx-auto py-20 text-center">
   <h2 class="text-2xl font-bold text-[#005C67] mb-6">Delete Product</h2>
   <p class="mb-6"> Are you sure you want to delete this product? <strong>{{ product.name }}</strong>?</p>
@@ -11,5 +12,5 @@
     <a href="{% url 'catalog:product_list' %}" class="ml-3 text-gray-500 hover:text-[#005C67]">No</a>
   </form>
 </div>
-
+</main>
 {% endblock %}
