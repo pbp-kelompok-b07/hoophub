@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+{% include "navbar.html" %}
+
+<div class="max-w-full flex justify-center">
+  <div class="w-full max-w-[1518px]">
+    <!-- Header -->
+    <div class="flex items-center gap-2 px-5 py-2"
+         style="border-bottom:2px dashed #005F73; padding:10px 20px;">
+      <h2 style="color:#000; font-family:Poppins, sans-serif; font-size:24px; font-weight:600; line-height:normal;">
+        Your wishlist is here!
+      </h2>
+    </div>
+
+    <!-- Messages -->
+    <div id="wl-messages" class="px-5 py-3"></div>
+
+    <!-- GRID WRAPPER (HIGHLIGHT) -->
+    <div id="wish-grid" class="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12 px-8 py-6">
+      {% if wish_items %}
+        {% for item in wish_items %}
+          {% with product=item.product %}
+
+          <!-- CARD (keperluan desain: ukuran tetap untuk desktop; responsive di mobile) -->
+          <div class="wish-card rounded-2xl overflow-hidden bg-[#005F73] p-6 flex flex-col md:flex-row items-center gap-6"
+               data-wishlist-id="{{ item.pk }}" data-product-id="{{ product.pk }}">
+            <!-- Image box -->
+            <a href="{% if product.get_absolute_url %}{{ product.get_absolute_url }}{% else %}{% url 'catalog:product_detail' product.pk %}{% endif %}"
+               class="block flex-shrink-0">
+              {% if product.image %}
+                <div class="w-56 h-56 rounded-xl bg-center bg-contain bg-no-repeat"
+                     style="background-image: url('{{ product.image }}'); background-color: lightgray;">
+                </div>
+              {% else %}
+                <div class="w-56 h-56 bg-gray-300 rounded-xl flex items-center justify-center">
+                  <span class="text-gray-500">No Image</span>
+                </div>
+              {% endif %}
+            </a>
+
+            <!-- Title & meta -->
+            <div class="text-white flex-1">
+              <a href="{% if product.get_absolute_url %}{{ product.get_absolute_url }}{% else %}{% url 'catalog:product_detail' product.pk %}{% endif %}">
+                <p class="text-base font-medium" style="font-family:Poppins, sans-serif;">
+                  {{ product.name }}
+                </p>
+              </a>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex-shrink-0 flex flex-col sm:flex-row items-center gap-3">
+              <!-- Add to cart -->
+              <button class="btn-add-cart px-4 py-2 rounded-full text-white font-semibold"
+                      data-product-id="{{ product.pk }}"
+                      data-url="{% url 'cart:add_to_cart' product.pk %}"
+                      style="width:110px; height:40px; border-radius:1000px; background:#EE9B00; box-shadow: 0 4px 4px rgba(0,0,0,0.25);">
+                Add to cart
+              </button>
+
+              <!-- Remove from wishlist -->
+              <button class="btn-remove-wl px-4 py-2 rounded-full text-white font-semibold"
+                      data-wishlist-id="{{ item.pk }}"
+                      data-url="{% url 'wishlist:remove_from_wishlist' item.pk %}"
+                      style="width:110px; height:40px; border-radius:1000px; background:#BB3E03; box-shadow: 0 4px 4px rgba(0,0,0,0.25);"
+                      aria-label="Delete {{ product.name }} from wishlist">
+                Delete
+              </button>
+            </div>
+          </div>
+
+          {% endwith %}
+        {% endfor %}
+      {% else %}
+        <div class="col-span-2 p-6">
+          <p class="text-gray-600">Your wishlist is empty.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPT: AJAX handlers (HIGHLIGHT: menggunakan data-url, bukan replace trick) -->
+<script>
+/* CSRF helper (sama seperti sebelumnya) */
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(';');
+    for (let c of cookies) {
+      c = c.trim();
+      if (c.startsWith(name + '=')) {
+        cookieValue = decodeURIComponent(c.slice(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
+function flashMessage(msg, type='info') {
+  const box = document.getElementById('wl-messages');
+  const el = document.createElement('div');
+  el.textContent = msg;
+  el.className = 'p-2 mb-2 rounded ' + (type === 'success' ? 'bg-green-100 text-green-800' : type==='error' ? 'bg-red-100 text-red-800' : 'bg-gray-100');
+  box.appendChild(el);
+  setTimeout(()=> el.remove(), 3500);
+}
+
+document.addEventListener('click', async function(e) {
+  // Remove from wishlist
+  if (e.target.matches('.btn-remove-wl')) {
+    const btn = e.target;
+    const wlId = btn.dataset.wishlistId;
+    const url = btn.dataset.url;
+    if (!url) return;
+    btn.disabled = true;
+
+    try {
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrftoken,
+          'X-Requested-With': 'XMLHttpRequest',
+          'Content-Type': 'application/json'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({})
+      });
+
+      if (resp.status === 200) {
+        const data = await resp.json();
+        if (data.deleted) {
+          // remove card from DOM
+          const card = btn.closest('.wish-card');
+          card?.remove();
+          flashMessage('Item removed from wishlist', 'success');
+        } else {
+          flashMessage('Failed to remove item', 'error');
+          btn.disabled = false;
+        }
+      } else if (resp.status === 403) {
+        flashMessage('Permission denied', 'error');
+        btn.disabled = false;
+      } else {
+        flashMessage('Server error', 'error');
+        btn.disabled = false;
+      }
+    } catch (err) {
+      console.error(err);
+      flashMessage('Network error', 'error');
+      btn.disabled = false;
+    }
+  }
+
+  // Add to cart (calls cart add endpoint) — HIGHLIGHT: use data-url
+  if (e.target.matches('.btn-add-cart')) {
+    const btn = e.target;
+    const productId = btn.dataset.productId;
+    const url = btn.dataset.url;
+    if (!productId || !url) return;
+    btn.disabled = true;
+
+    try {
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrftoken,
+          'X-Requested-With': 'XMLHttpRequest',
+          'Content-Type': 'application/json'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({ quantity: 1 })
+      });
+
+      if (resp.ok) {
+        // try parse JSON returned by cart view (make cart view return JSON on AJAX)
+        let data = {};
+        try { data = await resp.json(); } catch (_) { /* not JSON */ }
+        flashMessage(data.message || 'Added to cart', 'success');
+        btn.disabled = false;
+      } else {
+        flashMessage('Failed to add to cart', 'error');
+        btn.disabled = false;
+      }
+    } catch (err) {
+      console.error(err);
+      flashMessage('Network error', 'error');
+      btn.disabled = false;
+    }
+  }
+});
+</script>
+
+{% endblock %}
