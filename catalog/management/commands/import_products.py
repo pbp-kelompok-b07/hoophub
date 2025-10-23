@@ -7,7 +7,7 @@ from django.db import transaction
 def parse_date(s):
     if not s:
         return None
-    for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%Y/%m/%d"):
+    for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%Y/%m/%d"):
         try:
             return datetime.strptime(s.strip(), fmt).date()
         except ValueError:
@@ -54,8 +54,8 @@ class Command(BaseCommand):
                     description = (row.get("Description") or "").strip() or ""
                     image = (row.get("Link") or "").strip() or None
                     release_date = None
-                    if row.get("release_date"):
-                        release_date = parse_date(row["release_date"])
+                    if row.get("Released Date"):
+                        release_date = parse_date(row["Released Date"])
 
                     def to_int(val, default=0):
                         try:
