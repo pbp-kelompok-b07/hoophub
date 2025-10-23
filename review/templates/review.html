@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>hoophub - Review</title>
+
+<style>
+    .head {
+        display: flex;
+        padding: 10px 20px;
+        align-items: center;
+        gap: 10px;
+        padding: 0px clamp(20px, 7vw, 60px) 10px;
+    }
+    .head .content {
+        color: #000;
+        font-size: 1em;
+        font-weight: 600;
+        line-height: normal;
+        border-bottom: 2px dashed #005F73;
+    }
+    .review-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        padding: 20px;
+    }
+    .review-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 20px;
+        padding: 0 clamp(20px, 7vw, 60px) 10px;
+        justify-content: flex-end;
+        align-items: flex-start;
+    }
+    .review-details {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+    .review-date {
+        font-size: 0.8em;
+        font-style: italic;
+    }
+    .review-product-image {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+        flex-shrink: 0;
+    }
+    .review-product-content {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .review-product-name {
+        color: #000;
+        font-size: 1.1em;
+        font-weight: 600;
+        color: #000;
+    }
+    .review-product-price {
+        color: #000;
+        font-size: 1em;
+        font-weight: 500;
+        color: #000;
+    }
+    .review-message {
+        color: #343A40;
+        font-size: 1em;
+        font-weight: 400;
+        overflow-wrap: break-word;
+    }
+    .rating {
+        display: flex;
+    }
+    .rating .star {
+        font-size: 1.5em;
+        color: #D9D9D9;
+    }
+    .rating .star.rated {
+        font-size: 1.5em;
+        color: #EE9B00;
+    }
+    .review-action {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        margin-left: auto;
+        flex-shrink: 0;
+        justify-content: flex-end;
+    }
+    .review-edit-button {
+        background-color: #EE9B00;
+        color: #FFF;
+        font-weight: 500;
+        padding: 10px 20px;
+        border-radius: 99px;
+        text-align: center;
+        align-self: flex-end;
+        margin-top: auto;
+        display: flex;
+        color: #FFF;
+    }
+    .review-delete-button {
+        background-color: #BB3E03;
+        color: #FFF;
+        font-weight: 500;
+        padding: 10px 20px;
+        border-radius: 99px;
+        text-align: center;
+        align-self: flex-end;
+        margin-top: auto;
+        display: flex;
+        color: #FFF;
+    }
+</style>
+{% endblock meta %}
+
+{% block content %}
+{% comment %} {% include 'navbar.html' %} {% endcomment %}
+    <div class="head">
+        <span class="content">Look back your reviews!</span>
+    </div>
+
+    <div id="review-container" class="review-container"></div>
+
+    <h2 id="empty" style="text-align: center; display: none;">No reviews yet.</h2>
+    <h2 id="error" style="text-align: center; display: none;">Error loading reviews.</h2>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        loadReview();
+    })
+
+    async function loadReview() {
+        const reviewContainer = document.getElementById('review-container');
+        const emptyContainer = document.getElementById('empty');
+        const errorContainer = document.getElementById('error');
+
+        try {
+            const response = await fetch("{% url 'review:show_json' %}");
+
+            if (!response.ok) {
+            throw new Error('Failed to fetch review data from server.');
+            }
+
+            const reviews = await response.json();
+
+            if (reviews.length === 0) { // belum ada review
+                reviewContainer.style.display = 'none';
+                emptyContainer.style.display = 'block';
+            }
+            else { // sudah ada review
+                reviewContainer.innerHTML = '';
+                reviews.forEach(review => {reviewContent = `
+                    <div class="review-card flex flex-col md:flex-row">
+                        <img class="review-product-image w-full h-auto object-cover rounded-lg md:w-48 h-48" src="${review.product.image}" alt="Product image">
+                        <div class="review-details">
+                            <h2 class="review-product-name">${review.product.name}</h2>
+                            
+                            <p class="review-product-price">Rp ${new Intl.NumberFormat('id-ID').format(review.product.price)}</p>
+                            <p class="review-date">${review.date}</p>
+                            <div class="rating">
+                                ${stars(review.rating)}
+                            </div>
+                            <h3 class="review-message">${review.review}</h3>
+                        </div>
+                        <div class="review-action">
+                            <button class="review-edit-button" onclick="showEditReviewModal('${review.id}')">Edit</button>
+                            <button class="review-delete-button" onclick="showDeleteReviewModal('${review.id}')">Delete</button>
+                        </div>
+                    </div>
+                `;
+                    reviewContainer.innerHTML += reviewContent;
+                })
+            }
+        }
+        catch (error) {
+            errorContainer.style.display = 'block';
+        }
+    }
+
+    function stars(rating) {
+        let stars = '';
+        for (let i = 1; i <= 5; i++) { // kalau ada rating, kasih class 'rated' (untuk kasih style)
+            stars += `<span class="star ${i <= rating ? 'rated' : ''}">&#9733;</span>`;
+        }
+        return stars;
+    }
+</script>
+{% endblock content %}
+

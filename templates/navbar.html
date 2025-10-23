@@ -1,6 +1,6 @@
-<nav class="relative max-w-7xl mx-auto px-6 lg:px-8 overflow-x-hidden">
+<nav class="fixed top-0 left-0 right-0 z-50 w-full bg-white shadow-md overflow-x-hidden" style="padding: 10px 50px 0px 50px; box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
-        <div style="color: #005F73; font-style: 40px; font-style: normal; font-weight: 700; line-height: normal; font-size:1.5em">
+        <div style="color: #005F73; font-style: 40px; font-style: normal; font-weight: 700; line-height: normal; font-size:1.5em; padding: 15px 0">
             <a href="/">hoophub</a>
         </div>
 
@@ -47,18 +47,18 @@
     </div>
 
     <div style="stroke-width: 1px; stroke: #808080;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="1824" height="7" viewBox="0 0 1824 7" fill="none">
+        <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="7" viewBox="0 0 1824 7" fill="none">
             <path d="M-51 1L1823.99 6.29374" stroke="#808080"/>
         </svg>
     </div>
 
-    <div class="hidden md:flex md:flex-row absolute md:static top-full left-0 w-full bg-white md:bg-transparent shadow-md md:shadow-none z-50" style="justify-content: space-between; align-items: center; flex-shrink: 0; font-size: 0.9em; padding: 20px 40px;">
-        <a href="/">Products</a>
+    <div class="hidden md:flex md:flex-row absolute md:static top-full left-0 w-full bg-white md:bg-transparent shadow-md md:shadow-none z-50" style="justify-content: space-between; align-items: center; flex-shrink: 0; font-size: 0.9em; padding: 15px 40px 5px 40px;">
+        <a href="{% url 'catalog:product_view' %}">Products</a>
         <a href="/">Checkout</a>
         <a href="/">Review</a>
         <a href="/">Wishlist</a>
         <a href="{% url "invoice:show_invoices" %}">Invoice</a>
-        <a href="/">Report</a>
+        <a href="{% url 'report:show_report' %}">Report</a>
     </div>
 
     <div class="mobile-menu hidden md:hidden border-t">
@@ -68,7 +68,7 @@
                 <a href="/">Checkout</a>
                 <a href="/">Review</a>
                 <a href="/">Wishlist</a>
-                <a href="{% url "invoice:show_invoices" %}">Invoice</a>
+                <a href="/">Invoice</a>
                 <a href="/">Report</a>
             </div>
         </div>
