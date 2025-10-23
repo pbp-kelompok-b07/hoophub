@@ -220,10 +220,7 @@
 
     document.getElementById("reviewForm").reset();
     hideModal();
-    setTimeout(() => { // kalau udah review, kasih liat halaman review
-      window.location.href = "{% url 'review:show_review' %}";
-    }, 800);
-
+    loadProductReview();
     return false;
   }
 
