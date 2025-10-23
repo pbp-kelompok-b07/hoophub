@@ -95,3 +95,19 @@ def products_json(request):
         "release_date", "is_available", "image", "description"
     )
     return JsonResponse(list(products), safe=False)
+
+def get_reviews(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    reviews = product.reviews.all()
+    
+    data = [
+        {
+            'id': str(review.id),
+            'user': review.user.username,
+            'rating': review.rating,
+            'review': review.review,
+            'date': review.date.strftime('%d %B %Y')
+        }
+        for review in reviews
+    ]
+    return JsonResponse(data, safe=False)
