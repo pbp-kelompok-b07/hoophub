@@ -37,27 +37,46 @@
   <!-- Product Grid -->
   <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
     {% for p in products %}
-    <div class="bg-white rounded-xl shadow-md hover:shadow-lg transition p-4 flex flex-col">
-      {% if p.image %}
-        <img src="{{ p.image.url }}" alt="{{ p.name }}" class="h-56 w-full object-cover rounded-md mb-3">
-      {% else %}
-        <img src="https://via.placeholder.com/300x200?text=No+Image" class="h-56 w-full object-cover rounded-md mb-3">
-      {% endif %}
-      <h3 class="text-xl font-semibold text-[#005C67]">{{ p.name }}</h3>
-      <p class="text-gray-600">{{ p.brand }} • {{ p.category }}</p>
-      <p class="text-[#F5A623] font-bold mt-1 mb-2">Rp {{ p.price }}</p>
-      <p class="text-sm text-gray-500 mb-3">{{ p.description|truncatechars:100 }}</p>
-      <p class="text-sm text-gray-700 mb-1">⭐ {{ p.rating }}/5</p>
-      <p class="text-sm mb-3 {{ p.is_available|yesno:'text-green-600,text-red-600' }}">
-        {% if p.is_available %}Tersedia{% else %}Stok Habis{% endif %}
-      </p>
-      <p class="text-xs text-gray-400 mb-4">Dirilis: {{ p.release_date }}</p>
+      <div class="bg-white rounded-2xl shadow-md hover:shadow-lg transition p-4 flex flex-col">
+        <a href="{% url 'catalog:product_detail' p.id %}">
+          <img src="{{ p.image }}" alt="{{ p.name }}" class="h-56 w-full object-cover rounded-md mb-3">
+          <h3 class="text-xl font-semibold text-[#005C67] hover:underline">{{ p.name }}</h3>
+        </a>
 
-      <div class="mt-auto flex justify-between">
-        <a href="{% url 'catalog:product_update' p.pk %}" class="bg-[#005C67] text-white rounded-lg px-3 py-1 hover:bg-[#007681]">Edit</a>
-        <a href="{% url 'catalog:product_delete' p.pk %}" class="bg-red-600 text-white rounded-lg px-3 py-1 hover:bg-red-700">Hapus</a>
+        <p class="text-gray-600">{{ p.brand }} • {{ p.category }}</p>
+        <p class="text-[#F5A623] font-bold mt-1 mb-2">Rp {{ p.price }}</p>
+
+        <p class="text-sm {{ p.is_available|yesno:'text-green-600,text-red-600' }}">
+          {% if p.is_available %}Available{% else %}Out of Product{% endif %}
+        </p>
+        <p class="text-xs text-gray-400 mb-4">Dirilis: {{ p.release_date }}</p>
+
+        {% if user.is_staff %}
+          <div class="mt-auto flex justify-between">
+            <button
+              class="editBtn bg-[#005C67] text-white rounded-lg px-3 py-1 hover:bg-[#007681]"
+              data-id="{{ p.id }}"
+              data-name="{{ p.name|escape }}"
+              data-brand="{{ p.brand|escape }}"
+              data-category="{{ p.category }}"
+              data-price="{{ p.price }}"
+              data-stock="{{ p.stock }}"
+              data-image="{{ p.image|escape }}"
+              data-release_date="{{ p.release_date|date:'Y-m-d' }}"
+              data-description="{{ p.description|escape }}"
+              data-is_available="{{ p.is_available }}"
+> 
+              Edit
+            </button>
+
+            <button
+              class="deleteBtn bg-red-600 text-white rounded-lg px-3 py-1 hover:bg-red-700"
+              data-id="{{ p.id }}">
+              Delete
+            </button>
+          </div>
+        {% endif %}
       </div>
-    </div>
     {% empty %}
       <p class="text-center text-gray-500 col-span-3">Tidak ada produk ditemukan.</p>
     {% endfor %}
@@ -126,5 +145,121 @@
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // --- Helpers ---
+  const getCookie = (name) => {
+    const v = `; ${document.cookie}`;
+    const p = v.split(`; ${name}=`);
+    if (p.length === 2) return p.pop().split(';').shift();
+  };
+  const csrftoken = getCookie('csrftoken');
+
+  const productModal = document.getElementById("productModal");
+  const deleteModal = document.getElementById("deleteModal");
+  const modalCard = document.getElementById("modalCard");
+  const deleteCard = document.getElementById("deleteCard");
+  const openAddModal = document.getElementById("openAddModal");
+  const closeModal = document.getElementById("closeModal");
+  const productForm = document.getElementById("productForm");
+  const modalTitle = document.getElementById("modalTitle");
+  const confirmDelete = document.getElementById("confirmDelete");
+  const cancelDelete = document.getElementById("cancelDelete");
+  let deleteId = null;
+
+  // Animasi modal
+  const showModal = (modal, card) => {
+    modal.classList.remove("hidden");
+    setTimeout(() => card.classList.replace("scale-95", "scale-100"), 20);
+    card.classList.replace("opacity-0", "opacity-100");
+  };
+  const hideModal = (modal, card) => {
+    card.classList.replace("scale-100", "scale-95");
+    card.classList.replace("opacity-100", "opacity-0");
+    setTimeout(() => modal.classList.add("hidden"), 200);
+  };
+
+  // Add Product
+  if (openAddModal) {
+    openAddModal.addEventListener("click", () => {
+      modalTitle.textContent = "Add Product";
+      productForm.reset();
+      document.getElementById("productId").value = "";
+      showModal(productModal, modalCard);
+    });
+  }
+
+  if (closeModal)
+    closeModal.addEventListener("click", () => hideModal(productModal, modalCard));
+
+  // Edit Product
+  document.querySelectorAll(".editBtn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      modalTitle.textContent = "Edit Product";
+      document.getElementById("productId").value = btn.dataset.id || "";
+      document.getElementById("name").value = btn.dataset.name || "";
+      document.getElementById("brand").value = btn.dataset.brand || "";
+      document.getElementById("category").value = btn.dataset.category || "";
+      document.getElementById("price").value = btn.dataset.price || "";
+      document.getElementById("stock").value = btn.dataset.stock || "";
+      document.getElementById("image").value = btn.dataset.image || "";
+      document.getElementById("release_date").value = btn.dataset.release_date || "";
+      showModal(productModal, modalCard);
+    });
+  });
+
+  // Delete Product
+  document.querySelectorAll(".deleteBtn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      deleteId = btn.dataset.id;
+      showModal(deleteModal, deleteCard);
+    });
+  });
+
+  if (cancelDelete)
+    cancelDelete.addEventListener("click", () => hideModal(deleteModal, deleteCard));
+
+  if (confirmDelete) {
+    confirmDelete.addEventListener("click", async () => {
+      if (!deleteId) return;
+      const res = await fetch(`/catalog/delete/${deleteId}/`, {
+        method: "POST",
+        headers: { "X-CSRFToken": csrftoken },
+      });
+      if (res.ok) {
+        hideModal(deleteModal, deleteCard);
+        const card = document.querySelector(`.deleteBtn[data-id='${deleteId}']`)?.closest(".bg-white");
+        if (card) card.remove();
+      } else {
+        alert("Delete product failed.");
+      }
+    });
+  }
+
+  // Submit Add/Edit
+  if (productForm) {
+    productForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(productForm);
+      const id = formData.get("id");
+      const url = id ? `/catalog/update/${id}/` : "{% url 'catalog:product_create' %}";
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "X-CSRFToken": csrftoken },
+        body: formData,
+      });
+
+      if (res.ok) {
+        hideModal(productModal, modalCard);
+        location.reload();
+      } else {
+        alert("Error. Try again later.");
+      }
+    });
+  }
+});
+</script>
 {% endif %}
 {% endblock %}
