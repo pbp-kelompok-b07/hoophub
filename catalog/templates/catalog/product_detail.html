@@ -41,11 +41,12 @@
         {% if p.release_date %}
           <span class="text-sm text-gray-500">Release date: {{ p.release_date }}</span>
         {% endif %}
-        <div>
-          <button type="button" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300" onclick="showCreateReviewModal({{ p.id }})">
-              Review
-          </button>
-        </div>
+      </div>
+
+      <div>
+        <button type="button" class="mb-6 px-4 py-2 bg-[#EE9B00] text-white font-semibold rounded-lg hover:bg-[#CA6702] transition" onclick="showCreateReviewModal({{ p.id }})">
+            Review
+        </button>
       </div>
 
       <h2 class="text-xl font-semibold text-[#0f5257] mb-3">Description</h2>

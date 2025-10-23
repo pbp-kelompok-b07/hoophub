@@ -7,17 +7,18 @@ from review.forms import ReviewForm
 from catalog.models import Product
 
 # Create your views here.
-@login_required(login_url="authentication:login")
 def show_review(request):
-    if 'admin' in request.user.username.lower():
-        review = Review.objects.all()
-    else:
-        review = Review.objects.filter(user=request.user)
-    context = {
-        "review": review,
-        "is_superuser": request.user.is_superuser
-    }
-    return render(request, "review.html", context)
+    if request.user.is_authenticated:
+        if 'admin' in request.user.username.lower():
+            review = Review.objects.all()
+        else:
+            review = Review.objects.filter(user=request.user)
+        context = {
+            "review": review
+        }
+        return render(request, "review.html", context)
+    else :
+        return render(request, "review.html")
 
 @login_required(login_url="authentication:login")
 def show_json(request):
