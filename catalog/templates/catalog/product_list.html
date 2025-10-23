@@ -36,51 +36,70 @@
 
   <!-- Product Grid -->
   <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-    {% for p in products %}
-      <div class="bg-white rounded-2xl shadow-md hover:shadow-lg transition p-4 flex flex-col">
-        <a href="{% url 'catalog:product_detail' p.id %}">
-          <img src="{{ p.image }}" alt="{{ p.name }}" class="h-56 w-full object-cover rounded-md mb-3">
-          <h3 class="text-xl font-semibold text-[#005C67] hover:underline">{{ p.name }}</h3>
-        </a>
+  {% for p in products %}
+    <div class="bg-white rounded-2xl shadow-md hover:shadow-lg transition p-4 flex flex-col">
+      <a href="{% url 'catalog:product_detail' p.id %}">
+        <img src="{{ p.image }}" alt="{{ p.name }}" class="h-56 w-full object-cover rounded-md mb-3">
+        <h3 class="text-xl font-semibold text-[#005C67] hover:underline">{{ p.name }}</h3>
+      </a>
 
-        <p class="text-gray-600">{{ p.brand }} • {{ p.category }}</p>
-        <p class="text-[#F5A623] font-bold mt-1 mb-2">Rp {{ p.price }}</p>
+      <p class="text-gray-600">{{ p.brand }} • {{ p.category }}</p>
+      <p class="text-[#F5A623] font-bold mt-1 mb-2">Rp {{ p.price }}</p>
 
-        <p class="text-sm {{ p.is_available|yesno:'text-green-600,text-red-600' }}">
-          {% if p.is_available %}Available{% else %}Out of Product{% endif %}
-        </p>
-        <p class="text-xs text-gray-400 mb-4">Dirilis: {{ p.release_date }}</p>
+      <p class="text-sm {{ p.is_available|yesno:'text-green-600,text-red-600' }}">
+        {% if p.is_available %}Available{% else %}Out of Product{% endif %}
+      </p>
+      <p class="text-xs text-gray-400 mb-4">Dirilis: {{ p.release_date }}</p>
 
-        {% if user.is_staff %}
-          <div class="mt-auto flex justify-between">
-            <button
-              class="editBtn bg-[#005C67] text-white rounded-lg px-3 py-1 hover:bg-[#007681]"
-              data-id="{{ p.id }}"
-              data-name="{{ p.name|escape }}"
-              data-brand="{{ p.brand|escape }}"
-              data-category="{{ p.category }}"
-              data-price="{{ p.price }}"
-              data-stock="{{ p.stock }}"
-              data-image="{{ p.image|escape }}"
-              data-release_date="{{ p.release_date|date:'Y-m-d' }}"
-              data-description="{{ p.description|escape }}"
-              data-is_available="{{ p.is_available }}"
-> 
-              Edit
+      {% if user.is_staff %}
+        <div class="mt-auto flex justify-between">
+          <button
+            class="editBtn bg-[#005C67] text-white rounded-lg px-3 py-1 hover:bg-[#007681]"
+            data-id="{{ p.id }}"
+            data-name="{{ p.name|escape }}"
+            data-brand="{{ p.brand|escape }}"
+            data-category="{{ p.category }}"
+            data-price="{{ p.price }}"
+            data-stock="{{ p.stock }}"
+            data-image="{{ p.image|escape }}"
+            data-release_date="{{ p.release_date|date:'Y-m-d' }}"
+            data-description="{{ p.description|escape }}"
+            data-is_available="{{ p.is_available }}"
+          > 
+            Edit
+          </button>
+
+          <button
+            class="deleteBtn bg-red-600 text-white rounded-lg px-3 py-1 hover:bg-red-700"
+            data-id="{{ p.id }}">
+            Delete
+          </button>
+        </div>
+      
+      {% else %}
+        <div class="mt-auto">
+          {% if p.is_available %}
+            <form action="{% url 'cart:add_to_cart' p.id %}" method="POST" class="w-full">
+              {% csrf_token %}
+              <input type="hidden" name="quantity" value="1">
+              
+              <button type="submit" 
+                      class="w-full bg-[#005C67] text-white rounded-lg px-3 py-2 hover:bg-[#007681] transition font-semibold">
+                🛒 Add to Cart
+              </button>
+            </form>
+          {% else %}
+            <button type="button" disabled 
+                    class="w-full bg-gray-400 text-white rounded-lg px-3 py-2 cursor-not-allowed font-semibold">
+              Out of Stock
             </button>
-
-            <button
-              class="deleteBtn bg-red-600 text-white rounded-lg px-3 py-1 hover:bg-red-700"
-              data-id="{{ p.id }}">
-              Delete
-            </button>
-          </div>
-        {% endif %}
+          {% endif %}
+        </div>
+      {% endif %}
       </div>
-    {% empty %}
-      <p class="text-center text-gray-500 col-span-3">Tidak ada produk ditemukan.</p>
-    {% endfor %}
-  </div>
+  {% empty %}
+    <p class="text-center text-gray-500 col-span-3">Tidak ada produk ditemukan.</p>
+  {% endfor %}
 </div>
 
 {% if user.is_staff %}
@@ -232,7 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const card = document.querySelector(`.deleteBtn[data-id='${deleteId}']`)?.closest(".bg-white");
         if (card) card.remove();
       } else {
-        alert("Gagal menghapus produk.");
+        alert("Delete product failed.");
       }
     });
   }
@@ -255,7 +274,7 @@ document.addEventListener("DOMContentLoaded", () => {
         hideModal(productModal, modalCard);
         location.reload();
       } else {
-        alert("Terjadi kesalahan. Coba lagi.");
+        alert("Error. Try again later.");
       }
     });
   }
