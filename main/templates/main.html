@@ -109,20 +109,20 @@
         </div>
     </div>
 
-    <div class="features">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 px-4 md:px-20" style="padding-bottom:250px">
-
-            <div class="features-card">
-                <div class="features-content">
-                    <div class="features-title">
-                        <span>Catalog</span>
-                    </div>
-                    <div class="features-detail">
-                        <span>Browse our elite collection of on-court equipment, designed for every type of player. Find gear that elevates your game and filter easily by brand, size, and style!</span>
-                    </div>
-                    <a href="/" class="explore-button">Explore</a>
-                </div>
-            </div>
+<div class="features">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 px-4 md:px-20">
+    <!-- Catalog -->
+    <div class="features-card">
+        <div class="features-content">
+        <div class="features-title">
+            <span>Catalog</span>
+        </div>
+        <div class="features-detail">
+            <span>Browse our elite collection of on-court equipment, designed for every type of player. Find gear that elevates your game and filter easily by brand, size, and style!</span>
+        </div>
+        <a href="{% url 'catalog:product_list' %}" class="explore-button">Explore</a>
+        </div>
+    </div>
 
             <div class="features-card">
                 <div class="features-content">
