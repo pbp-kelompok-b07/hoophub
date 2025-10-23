@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.urls import reverse
 from django.contrib import messages
+from functools import wraps
 
 from catalog.models import Product
 from .models import Wishlist
@@ -11,7 +12,7 @@ def is_ajax(request):
     # helper kecil; Django <4 punya request.is_ajax() deprecated
     return request.headers.get("x-requested-with") == "XMLHttpRequest" or request.META.get("HTTP_X_REQUESTED_WITH") == "XMLHttpRequest"
 
-
+@login_required
 def wishlist_list(request):
     """
     Tampilkan daftar wishlist milik user yang sedang login.
@@ -23,7 +24,7 @@ def wishlist_list(request):
     wish_items = Wishlist.objects.filter(user=request.user).select_related("product").order_by("-date_added")
     return render(request, "wish_list.html", {"wish_items": wish_items})
 
-
+@login_required
 def add_to_wishlist(request, product_id):
     """
     Tambah product ke wishlist user. Hanya POST.
@@ -53,7 +54,7 @@ def add_to_wishlist(request, product_id):
     next_url = request.POST.get("next") or request.GET.get("next") or reverse("wishlist:list")
     return redirect(next_url)
 
-
+@login_required
 def remove_from_wishlist(request, pk):
     """
     Hapus item wishlist berdasarkan primary key Wishlist. Hanya POST.
@@ -80,7 +81,18 @@ def remove_from_wishlist(request, pk):
     next_url = request.POST.get("next") or request.GET.get("next") or reverse("wishlist:list")
     return redirect(next_url)
 
+def ajax_login_required(view_func):
+    @wraps(view_func)
+    def _wrapped(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'error': 'login required'}, status=401)
+            from django.contrib.auth.views import redirect_to_login
+            return redirect_to_login(request.get_full_path())
+        return view_func(request, *args, **kwargs)
+    return _wrapped
 
+@login_required
 def toggle_wishlist(request, product_id):
     """
     Toggle via POST: jika ada -> hapus, jika belum -> tambah.

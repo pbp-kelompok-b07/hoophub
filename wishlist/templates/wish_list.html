@@ -4,6 +4,40 @@
 {% block content %}
 {% include "navbar.html" %}
 
+<style>
+.wl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px; 
+  width: 110px;
+  height: 40px;
+  border-radius: 1000px;
+  box-shadow: 0 4px 4px rgba(0,0,0,0.25);
+  font-family: Poppins, sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+.btn-add-cart { background: #EE9B00; color: #fff; }
+.btn-remove-wl { background: #BB3E03; color: #fff; }
+
+/* label di dalam tombol, aman untuk truncation */
+.wl-btn .btn-label {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+</style>
+
 <div class="max-w-full flex justify-center">
   <div class="w-full max-w-[1518px]">
     {% if not request.user.is_authenticated %}
@@ -51,35 +85,50 @@
               {% endif %}
             </a>
 
-            <!-- Title & meta -->
-            <div class="text-white flex-1">
+            <!-- Title & buttons -->
+            <div class="flex-1 flex flex-col items-center text-white"
+                style="width:236px; height:150px; justify-content:space-between;">
+
+              <!-- Title -->
               <a href="{% if product.get_absolute_url %}{{ product.get_absolute_url }}{% else %}{% url 'catalog:product_detail' product.pk %}{% endif %}">
-                <p class="text-base font-medium" style="font-family:Poppins, sans-serif;">
+                <p style="
+                  color:#FFF;
+                  font-family:Poppins, sans-serif;
+                  font-size:16px;
+                  font-style:normal;
+                  font-weight:500;
+                  line-height:normal;
+                  width:236px;
+                  text-align:center;
+                  overflow:hidden;
+                  text-overflow:ellipsis;
+                  white-space:nowrap;
+                  ">
                   {{ product.name }}
                 </p>
               </a>
-            </div>
 
-            <!-- Buttons -->
-            <div class="flex-shrink-0 flex flex-col sm:flex-row items-center gap-3">
-              <!-- Add to cart -->
-              <button class="btn-add-cart px-4 py-2 rounded-full text-white font-semibold"
-                      data-product-id="{{ product.pk }}"
-                      data-url="{% url 'cart:add_to_cart' product.pk %}"
-                      style="width:110px; height:40px; border-radius:1000px; background:#EE9B00; box-shadow: 0 4px 4px rgba(0,0,0,0.25);">
-                Add to cart
-              </button>
+              <!-- Buttons di bawah -->
+              <div class="mt-auto flex justify-center gap-4 w-full">
+                <!-- Add to cart -->
+                <button
+                  class="wl-btn btn-add-cart"
+                  data-product-id="{{ product.pk }}"
+                  data-url="{% url 'cart:add_to_cart' product.pk %}"
+                  aria-label="Add {{ product.name }} to cart"
+                >
+                  <span class="btn-label">Add to cart</span>
+                </button>
 
-              <!-- Remove from wishlist -->
-              <button class="btn-remove-wl px-4 py-2 rounded-full text-white font-semibold"
-                      data-wishlist-id="{{ item.pk }}"
-                      data-url="{% url 'wishlist:remove_from_wishlist' item.pk %}"
-                      style="width:110px; height:40px; border-radius:1000px; background:#BB3E03; box-shadow: 0 4px 4px rgba(0,0,0,0.25);"
-                      aria-label="Delete {{ product.name }} from wishlist">
-                Delete
-              </button>
-            </div>
-          </div>
+                <!-- Delete -->
+                <button
+                  class="wl-btn btn-remove-wl"
+                  data-wishlist-id="{{ item.pk }}"
+                  data-url="{% url 'wishlist:remove_from_wishlist' item.pk %}"
+                  aria-label="Delete {{ product.name }} from wishlist"
+                >
+                  <span class="btn-label">Delete</span>
+                </button>
 
           {% endwith %}
         {% endfor %}
