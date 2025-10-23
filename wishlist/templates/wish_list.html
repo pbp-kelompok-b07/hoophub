@@ -6,13 +6,24 @@
 
 <div class="max-w-full flex justify-center">
   <div class="w-full max-w-[1518px]">
+    {% if not request.user.is_authenticated %}
+      <!-- User belum login -->
+      <div class="flex flex-col items-center justify-center p-10 text-center">
+        <p class="text-xl font-semibold mb-4">Sign in to view your wishlist!</p>
+        <a href="{% url 'authentication:login' %}" 
+           class="px-6 py-3 rounded-full bg-[#005F73] text-white font-semibold hover:bg-[#007f92]">
+          Sign In
+        </a>
+      </div>
+    {% else %}
     <!-- Header -->
-    <div class="flex items-center gap-2 px-5 py-2"
-         style="border-bottom:2px dashed #005F73; padding:10px 20px;">
-      <h2 style="color:#000; font-family:Poppins, sans-serif; font-size:24px; font-weight:600; line-height:normal;">
-        Your wishlist is here!
-      </h2>
-    </div>
+      <div class="flex items-center gap-2 px-5 py-2"
+           style="border-bottom:2px dashed #005F73; padding:10px 20px;">
+        <h2 style="color:#000; font-family:Poppins, sans-serif; font-size:24px; font-weight:600; line-height:normal;">
+          Your wishlist is here!
+        </h2>
+      </div>
+    {% endif %}
 
     <!-- Messages -->
     <div id="wl-messages" class="px-5 py-3"></div>

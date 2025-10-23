@@ -16,6 +16,10 @@ def wishlist_list(request):
     """
     Tampilkan daftar wishlist milik user yang sedang login.
     """
+    if not request.user.is_authenticated:
+        # user belum login -> render halaman minta login
+        return render(request, "wish_list.html", {"anonymous": True})
+    # user sudah login -> ambil dan render wishlist
     wish_items = Wishlist.objects.filter(user=request.user).select_related("product").order_by("-date_added")
     return render(request, "wish_list.html", {"wish_items": wish_items})
 
