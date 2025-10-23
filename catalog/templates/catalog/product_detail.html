@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'navbar.html' %}
+
+<div class="max-w-7xl mx-auto px-6 py-8">
+  <!-- Back -->
+  <a href="{% url 'catalog:product_list' %}" class="inline-flex items-center gap-2 text-[#005C67] hover:underline mb-6">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M15 19l-7-7 7-7"/>
+    </svg>
+    Back to Catalog
+  </a>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Image -->
+    <div class="bg-gray-50 rounded-2xl p-4">
+      {% if p.image %}
+        <img src="{{ p.image }}" alt="{{ p.name }}" class="w-full rounded-xl object-cover" />
+      {% else %}
+        <div class="w-full h-80 bg-gray-200 rounded-xl"></div>
+      {% endif %}
+    </div>
+
+    <!-- Info -->
+    <div>
+      <h1 class="text-4xl font-extrabold text-[#0f5257] leading-tight mb-2">
+        {{ p.name }}
+      </h1>
+
+      <p class="text-gray-600 mb-2">{{ p.brand }} • {{ p.category }}</p>
+
+      <p class="text-[#F5A623] text-2xl font-bold mb-3">Rp {{ p.price }}</p>
+
+      <div class="flex items-center gap-4 mb-6">
+        <span class="px-3 py-1 rounded-full text-sm font-medium
+          {% if p.is_available %} bg-green-100 text-green-700 {% else %} bg-red-100 text-red-700 {% endif %}">
+          {% if p.is_available %}Available{% else %}Out of Stock{% endif %}
+        </span>
+        {% if p.release_date %}
+          <span class="text-sm text-gray-500">Release date: {{ p.release_date }}</span>
+        {% endif %}
+      </div>
+
+      <h2 class="text-xl font-semibold text-[#0f5257] mb-3">Description</h2>
+      <div class="prose max-w-none text-gray-700 leading-relaxed">
+        {{ p.description|linebreaksbr|default:"No description." }}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

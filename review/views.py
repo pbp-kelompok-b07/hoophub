@@ -9,15 +9,22 @@ from catalog.models import Product
 # Create your views here.
 @login_required(login_url="authentication:login")
 def show_review(request):
-    review = Review.objects.filter(user=request.user)
+    if 'admin' in request.user.username.lower():
+        review = Review.objects.all()
+    else:
+        review = Review.objects.filter(user=request.user)
     context = {
-        "review": review
+        "review": review,
+        "is_superuser": request.user.is_superuser
     }
     return render(request, "review.html", context)
 
 @login_required(login_url="authentication:login")
 def show_json(request):
-    reviews = Review.objects.filter(user=request.user)
+    if 'admin' in request.user.username.lower():
+        reviews = Review.objects.all()
+    else:
+        reviews = Review.objects.filter(user=request.user)
     data = [
         {
             'id': str(review.id),
@@ -37,7 +44,10 @@ def show_json(request):
 @login_required(login_url="authentication:login")
 def show_json_by_id(request, review_id):
     try:
-        review = Review.objects.filter(user=request.user).get(pk=review_id)
+        if 'admin' in request.user.username.lower():
+            review = Review.objects.get(pk=review_id)
+        else:
+            review = Review.objects.filter(user=request.user).get(pk=review_id)
         data = {
             'id': str(review.id),
             'date': review.date.strftime("%d %B %Y, %H:%M"),
@@ -75,7 +85,10 @@ def create_review(request, id):
 @require_POST
 @login_required(login_url="authentication:login")
 def edit_review(request, review_id):
-    review = get_object_or_404(Review, pk=review_id, user=request.user)
+    if 'admin' in request.user.username.lower():
+        review = get_object_or_404(Review, pk=review_id)
+    else:
+        review = get_object_or_404(Review, pk=review_id, user=request.user)
     form = ReviewForm(request.POST or None, instance=review)
 
     if form.is_valid() and request.method == 'POST':
@@ -88,7 +101,10 @@ def edit_review(request, review_id):
 @login_required(login_url="authentication:login")
 def delete_review(request, review_id):
     try:
-        review = get_object_or_404(Review, pk=review_id, user=request.user)
+        if 'admin' in request.user.username.lower():
+            review = get_object_or_404(Review, pk=review_id)
+        else:
+            review = get_object_or_404(Review, pk=review_id, user=request.user)
         review.delete()
         return JsonResponse({'status':'success', 'message':'Review deleted!'})
     except Exception as e:

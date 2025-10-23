@@ -121,13 +121,21 @@
 {% block content %}
 {% include 'navbar.html' %}
     <div class="head">
-        <span class="content">Look back your reviews!</span>
+        <span class="content">
+            {% if 'admin' in request.user.username.lower %}
+                Look at other user's reviews!
+            {% else %}
+                Look back at your reviews!
+            {% endif %}
+        </span>
     </div>
 
     <div id="review-container" class="review-container"></div>
 
-    <h2 id="empty" style="text-align: center; display: none;">No reviews yet.</h2>
-    <h2 id="error" style="text-align: center; display: none;">Error loading reviews.</h2>
+    <div id="message-container" class="hidden flex flex-col flex-grow-1 justify-center items-center h-64 text-center">
+        <h2 id="empty" style="text-align: center; display: none;">No reviews yet.</h2>
+        <p id="error" style="text-align: center; display: none;">Products you review will appear here.</p>
+    </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -136,6 +144,7 @@
 
     async function loadReview() {
         const reviewContainer = document.getElementById('review-container');
+        const messageContainer = document.getElementById('message-container');
         const emptyContainer = document.getElementById('empty');
         const errorContainer = document.getElementById('error');
 
@@ -149,6 +158,7 @@
             const reviews = await response.json();
 
             if (reviews.length === 0) { // belum ada review
+                messageContainer.classList.remove('hidden');
                 reviewContainer.style.display = 'none';
                 emptyContainer.style.display = 'block';
             }
