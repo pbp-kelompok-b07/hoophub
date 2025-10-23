@@ -111,79 +111,84 @@
 
 <div class="features">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 px-4 md:px-20">
-
-        <div class="features-card">
-            <div class="features-content">
-                <div class="features-title">
-                    <span>Catalog</span>
-                </div>
-                <div class="features-detail">
-                    <span>Browse our elite collection of on-court equipment, designed for every type of player. Find gear that elevates your game and filter easily by brand, size, and style!</span>
-                </div>
-                <a href="/" class="explore-button">Explore</a>
-            </div>
+    <!-- Catalog -->
+    <div class="features-card">
+        <div class="features-content">
+        <div class="features-title">
+            <span>Catalog</span>
         </div>
-
-        <div class="features-card">
-            <div class="features-content">
-                <div class="features-title">
-                    <span>Review</span>
-                </div>
-                <div class="features-detail">
-                    <span>Your experience on the court matters. Leave a rating and write a review to help fellow ballers make smarter choices. Your insights help everyone find the perfect equipment to elevate their game.</span>
-                </div>
-                <a href="/" class="explore-button">Explore</a>
-            </div>
+        <div class="features-detail">
+            <span>Browse our elite collection of on-court equipment, designed for every type of player. Find gear that elevates your game and filter easily by brand, size, and style!</span>
         </div>
-
-        <div class="features-card">
-            <div class="features-content">
-                <div class="features-title">
-                    <span>Checkout</span>
-                </div>
-                <div class="features-detail">
-                    <span>Your gear is in the cart and you're ready to make your move. Our checkout process is designed like a perfect fast break, quick, intuitive, and straight to the finish.</span>
-                </div>
-                <a href="/" class="explore-button">Explore</a>
-            </div>
+        <a href="{% url 'catalog:product_list' %}" class="explore-button">Explore</a>
         </div>
+    </div>
 
-        <div class="features-card">
-            <div class="features-content">
-                <div class="features-title">
-                    <span>Invoice</span>
-                </div>
-                <div class="features-detail">
-                    <span>Review every great play from your shopping history. Review your purchase details with ease. It's your personal record of all the gear that has fueled your game.</span>
-                </div>
-                <a href="/" class="explore-button">Explore</a>
-            </div>
+    <!-- Review -->
+    <div class="features-card">
+        <div class="features-content">
+        <div class="features-title">
+            <span>Review</span>
         </div>
+        <div class="features-detail">
+            <span>Share your experience and rate products to help other hoopers choose the right gear.</span>
+        </div>
+        <a href="/" class="explore-button">Explore</a>
+        </div>
+    </div>
 
-        <div class="features-card">
-            <div class="features-content">
-                <div class="features-title">
-                    <span>Report</span>
-                </div>
-                <div class="features-detail">
-                    <span>If you've encountered a problem with your order, use this feature to report any issue, and our support team will immediately review the play. We're here to make the right call.</span>
-                </div>
-                <a href="/" class="explore-button">Explore</a>
-            </div>
+    <!-- Checkout -->
+    <div class="features-card">
+        <div class="features-content">
+        <div class="features-title">
+            <span>Checkout</span>
         </div>
+        <div class="features-detail">
+            <span>Your gear is in the cart and you're ready to make your move. Our checkout process is designed like a perfect fast break — quick, intuitive, and straight to the finish.</span>
+        </div>
+        <a href="/" class="explore-button">Explore</a>
+        </div>
+    </div>
 
-        <div class="features-card">
-            <div class="features-content">
-                <div class="features-title">
-                    <span>Wishlist</span>
-                </div>
-                <div class="features-detail">
-                    <span>Eyeing a new pair of signature sneakers or the latest team apparel? Add them to your lineup. When you're prepared to make the move, your future favorites are just a click away.</span>
-                </div>
-                <a href="/" class="explore-button">Explore</a>
-            </div>
+    <!-- Invoice -->
+    <div class="features-card">
+        <div class="features-content">
+        <div class="features-title">
+            <span>Invoice</span>
         </div>
+        <div class="features-detail">
+            <span>Review every great play from your shopping history. Check your purchase details easily — your personal record of all the gear that has fueled your game.</span>
+        </div>
+        <a href="/" class="explore-button">Explore</a>
+        </div>
+    </div>
+
+    <!-- Report -->
+    <div class="features-card">
+        <div class="features-content">
+        <div class="features-title">
+            <span>Report</span>
+        </div>
+        <div class="features-detail">
+            <span>If you've encountered a problem with your order, use this feature to report any issue. Our support team will immediately review the play — we’re here to make the right call.</span>
+        </div>
+        <a href="/" class="explore-button">Explore</a>
+        </div>
+    </div>
+
+    <!-- Wishlist -->
+    <div class="features-card">
+        <div class="features-content">
+        <div class="features-title">
+            <span>Wishlist</span>
+        </div>
+        <div class="features-detail">
+            <span>Eyeing a new pair of signature sneakers or the latest team apparel? Add them to your lineup — your future favorites are just a click away.</span>
+        </div>
+        <a href="/" class="explore-button">Explore</a>
+        </div>
+    </div>
 
     </div>
-</div>
+
 {% endblock content %}
