@@ -3,11 +3,6 @@ from .models import Product
 from django import forms
 from django.http import JsonResponse
 
-# ⬇️ Tambahan import
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
-from django.utils.dateparse import parse_date
-
 # ---------- FORM ----------
 class ProductForm(forms.ModelForm):
     class Meta:
@@ -46,63 +41,51 @@ def product_detail(request, pk):
 
 
 # ---------- VIEW: CREATE (untuk AJAX modal) ----------
-@login_required(login_url="authentication:login")
-@require_POST
 def product_create(request):
-    name = request.POST.get("name")
-    brand = request.POST.get("brand")
-    category = request.POST.get("category")
-    description = request.POST.get("description")
-    price = request.POST.get("price")
-    stock = request.POST.get("stock")
-    image = request.POST.get("image")
-    release_date_str = request.POST.get("release_date")
-    is_available = request.POST.get("is_available") == "on"
+    if request.method == "POST":
+        name = request.POST.get("name")
+        brand = request.POST.get("brand")
+        category = request.POST.get("category")
+        description = request.POST.get("description") 
+        price = request.POST.get("price")
+        stock = request.POST.get("stock")
+        image = request.POST.get("image")
+        release_date = request.POST.get("release_date")
+        is_available = request.POST.get("is_available") == "on"
 
-    # parsing yang aman
-    try:
-        price = int(price) if price not in (None, "") else 0
-    except ValueError:
-        price = 0
-    try:
-        stock = int(stock) if stock not in (None, "") else 0
-    except ValueError:
-        stock = 0
-    release_date = parse_date(release_date_str) if release_date_str else None
-
-    Product.objects.create(
-        name=name,
-        brand=brand,
-        category=category,
-        description=description,
-        price=price,
-        stock=stock,
-        image=image,
-        release_date=release_date,
-        is_available=is_available,
-    )
-    return JsonResponse({"success": True})
-
-
-# ---------- VIEW: UPDATE ----------
-@login_required(login_url="authentication:login")
-@require_POST
-def product_update(request, pk):
-    product = get_object_or_404(Product, pk=pk)
-    form = ProductForm(request.POST or None, request.FILES or None, instance=product)
-    if form.is_valid():
-        form.save()
+        Product.objects.create(
+            name=name,
+            brand=brand,
+            category=category,
+            description=description,
+            price=price,
+            stock=stock,
+            image=image,
+            release_date=release_date,
+            is_available=is_available,
+        )
         return JsonResponse({"success": True})
     return JsonResponse({"success": False, "message": "Invalid request"}, status=400)
 
 
+# ---------- VIEW: UPDATE ----------
+def product_update(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == "POST":
+        form = ProductForm(request.POST or None, request.FILES or None, instance=product)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({"success": True})
+    return JsonResponse({"success": False, "message": "Invalid request"}, status=400)
+
+
 # ---------- VIEW: DELETE ----------
-@login_required(login_url="authentication:login")
-@require_POST
 def product_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)
-    product.delete()
-    return JsonResponse({"success": True})
+    if request.method == 'POST':
+        product.delete()
+        return JsonResponse({"success": True})
+    return JsonResponse({"success": False, "message": "Invalid request"}, status=400)
 
 
 # ---------- VIEW: JSON (untuk grid di frontend) ----------
@@ -116,6 +99,7 @@ def products_json(request):
 def get_reviews(request, pk):
     product = get_object_or_404(Product, pk=pk)
     reviews = product.reviews.all()
+    
     data = [
         {
             'id': str(review.id),
