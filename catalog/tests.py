@@ -1,6 +1,10 @@
-from django.test import TestCase
+from django.test import TestCase, Client
 from catalog.models import Product
 from datetime import date
+from django.urls import reverse
+from django.contrib.auth import get_user_model
+from review.models import Review
+import json
 
 class ProductModelTest(TestCase):
     def setUp(self):
@@ -95,3 +99,93 @@ Country/Region of Origin: China""",
         Pants = Product.objects.filter(category="Pants")
         self.assertEqual(Jersey.count(), 2)
         self.assertEqual(Pants.count(), 2)
+
+class CatalogViewsTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = get_user_model().objects.create_user(username='testuser', password='testpassword')
+        
+        self.product1 = Product.objects.create(
+            name="Nike Shoes Alpha",
+            brand="Nike",
+            category="Shoes",
+            price=3000000,
+            stock=10
+        )
+        self.product2 = Product.objects.create(
+            name="Spalding Ball",
+            brand="Spalding",
+            category="Ball",
+            price=500000,
+            stock=0,
+            is_available=False
+        )
+        
+        self.review = Review.objects.create(
+            product=self.product1,
+            user=self.user,
+            rating=5,
+            review="Great shoes!"
+        )
+
+    def test_product_list_view_and_filters(self):
+        response = self.client.get(reverse('catalog:product_list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Nike Shoes Alpha")
+        self.assertContains(response, "Spalding Ball")
+
+        response = self.client.get(reverse('catalog:product_list') + '?category=Shoes')
+        self.assertContains(response, "Nike Shoes Alpha")
+        self.assertNotContains(response, "Spalding Ball")
+
+        response = self.client.get(reverse('catalog:product_list') + '?min_price=1000000')
+        self.assertContains(response, "Nike Shoes Alpha")
+        self.assertNotContains(response, "Spalding Ball")
+
+    def test_product_detail_view(self):
+        response = self.client.get(reverse('catalog:product_detail', args=[self.product1.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Nike Shoes Alpha")
+        self.assertTemplateUsed(response, 'catalog/product_detail.html')
+
+    def test_products_json_view(self):
+        response = self.client.get(reverse('catalog:products_json'))
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]['name'], "Nike Shoes Alpha")
+
+    def test_get_reviews_json_view(self):
+        response = self.client.get(reverse('catalog:get_reviews', args=[self.product1.pk]))
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]['review'], "Great shoes!")
+
+    def test_product_create_view_ajax(self):
+        self.client.login(username='testuser', password='testpassword')
+        
+        response = self.client.post(reverse('catalog:product_create'), {
+            'name': 'New Jersey', 'brand': 'Adidas', 'category': 'Jersey',
+            'price': 750000, 'stock': 20, 'is_available': 'on'
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(Product.objects.filter(name='New Jersey').exists())
+
+    def test_product_update_view_ajax(self):
+        self.client.login(username='testuser', password='testpassword')
+        
+        response = self.client.post(reverse('catalog:product_update', args=[self.product1.pk]), {
+            'name': 'Nike Shoes Alpha Updated', 'brand': 'Nike', 'category': 'Shoes',
+            'price': 3500000, 'stock': 10
+        })
+        self.assertEqual(response.status_code, 200)
+        self.product1.refresh_from_db()
+        self.assertEqual(self.product1.name, 'Nike Shoes Alpha Updated')
+
+    def test_product_delete_view_ajax(self):
+        self.client.login(username='testuser', password='testpassword')
+        
+        response = self.client.post(reverse('catalog:product_delete', args=[self.product1.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Product.objects.filter(pk=self.product1.pk).exists())
