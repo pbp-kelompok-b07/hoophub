@@ -9,7 +9,7 @@ class Product(models.Model):
         ('Accessories', 'Accessories'),
     ]
 
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=300)
     brand = models.CharField(max_length=100)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     description = models.TextField(blank=True, null=True)  
