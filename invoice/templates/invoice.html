@@ -274,7 +274,6 @@
   </div>
 </main>
 
-<!-- MODAL DETAIL INVOICE -->
 <div id="invoiceModal"
      style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
             background-color:rgba(0,0,0,0.5); justify-content:center; align-items:center;
@@ -286,12 +285,10 @@
             style="position:absolute; top:16px; right:16px; background:none;
                    border:none; font-size:24px; color:#333; cursor:pointer;">×</button>
     <div id="modalBody">
-      <!-- dynamic -->
     </div>
   </div>
 </div>
 
-<!-- MODAL REORDER -->
 <div id="reorderModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
   <div style="background:#E0E0E0; border-radius:16px; width:90%; max-width:560px; padding:24px 28px; position:relative;">
     <button onclick="closeReorderModal()" style="position:absolute; top:12px; right:12px; background:none; border:none; font-size:24px; cursor:pointer;">×</button>
@@ -299,7 +296,6 @@
   </div>
 </div>
 
-<!-- MODAL DELETE CONFIRM -->
 <div id="deleteModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
   <div style="background:#E0E0E0; border-radius:16px; width:90%; max-width:420px; padding:24px 28px; position:relative;">
     <button onclick="closeDeleteModal()" style="position:absolute; top:12px; right:12px; background:none; border:none; font-size:24px; cursor:pointer;">×</button>
@@ -314,7 +310,6 @@
   </div>
 </div>
 
-<!-- MODAL EDIT STATUS -->
 <div id="statusModal"
      style="display:none; position:fixed; inset:0;
             background:rgba(0,0,0,0.5); z-index:1000;
@@ -372,7 +367,6 @@
     </div>
 
     <div id="statusModalError" style="color:#BB3E03; font-size:0.8rem; margin-top:12px; display:none;">
-      <!-- error message muncul di sini -->
     </div>
   </div>
 </div>
@@ -380,7 +374,6 @@
 
 
 <script>
-  /* ========= util: CSRF ========= */
   function getCsrfToken() {
     const m = document.cookie.match(/(?:^|;)\s*csrftoken=([^;]+)/);
     return m ? decodeURIComponent(m[1]) : "";
@@ -391,7 +384,6 @@
     return el && evt.target === el;
   }
 
-/* ========= helper: format Rupiah ========= */
 function formatRupiah(number) {
   if (isNaN(number)) return "0";
   return Number(number).toLocaleString("id-ID");
@@ -401,17 +393,14 @@ function openInvoiceModal(invoiceId) {
   const modal = document.getElementById("invoiceModal");
   const modalBody = document.getElementById("modalBody");
 
-  // buka modal & kasih loading state
   modal.style.display = "flex";
   modalBody.innerHTML = "<p>Loading...</p>";
 
-  // ambil data invoice (semua item, alamat, total, dll)
   fetch(`/invoice/${invoiceId}/json/`)
     .then(r => r.json())
     .then(data => {
-      // Kumpulan gambar semua item
       const galleryHtml = (data.items || [])
-        .filter(it => it.image) // cuma yang ada gambarnya
+        .filter(it => it.image)
         .map(it => `
           <img
             src="${it.image}"
@@ -421,7 +410,6 @@ function openInvoiceModal(invoiceId) {
         `)
         .join("");
 
-      // Detail items satu per satu
       const itemsHtml = (data.items || []).map(it => `
         <div style="display:flex; gap:10px; align-items:flex-start; margin-bottom:12px;">
           ${
@@ -442,7 +430,6 @@ function openInvoiceModal(invoiceId) {
         </div>
       `).join("");
 
-      // Render isi modal
       modalBody.innerHTML = `
         <h2 style="font-weight:700;color:#000;font-size:22px;margin-bottom:20px;">
           Invoice Detail
@@ -483,7 +470,6 @@ function openInvoiceModal(invoiceId) {
     document.getElementById("invoiceModal").style.display = "none";
   }
 
-  /* ========= Reorder ========= */
   let currentReorderId = null;
 
   function openReorderModal(invoiceId) {
@@ -493,7 +479,6 @@ function openInvoiceModal(invoiceId) {
     modal.style.display = "flex";
     body.innerHTML = "Loading...";
 
-    // GET info pesanan pertama hanya buat preview
     fetch(`/invoice/${invoiceId}/reorder/`)
       .then(r => r.json())
       .then(d => {
@@ -528,7 +513,6 @@ function openInvoiceModal(invoiceId) {
     currentReorderId = null;
   }
 
-  // POST reorder: masukkin semua item order ke cart, bukan cuma 1
   function submitReorder() {
     if (!currentReorderId) return;
     const btn = document.getElementById("reorderSubmitBtn");
@@ -544,7 +528,7 @@ function openInvoiceModal(invoiceId) {
     .then(r => r.json())
     .then(d => {
       if (d.status === "success") {
-        window.location.href = d.redirect_url; // cart + auto-open checkout modal
+        window.location.href = d.redirect_url;
       } else {
         alert(d.message || "Failed to reorder");
       }
@@ -553,7 +537,6 @@ function openInvoiceModal(invoiceId) {
     .finally(() => { btn && (btn.disabled = false); });
   }
 
-  /* ========= Delete ========= */
   let currentDeleteId = null;
 
   function openDeleteModal(invoiceId) {
@@ -594,32 +577,27 @@ function openInvoiceModal(invoiceId) {
     .finally(() => { btn && (btn.disabled = false); });
   }
 
-  /* ========= Edit Status ========= */
   let currentStatusInvoiceId = null;
 
   function openStatusModal(invoiceId, currentStatus) {
     currentStatusInvoiceId = invoiceId;
 
-    // set dropdown ke status sekarang
     const selectEl = document.getElementById("statusSelect");
     if (selectEl) {
       selectEl.value = currentStatus;
     }
 
-    // clear error
     const errBox = document.getElementById("statusModalError");
     if (errBox) {
       errBox.style.display = "none";
       errBox.textContent = "";
     }
 
-    // tampilkan modal
     const modal = document.getElementById("statusModal");
     if (modal) {
       modal.style.display = "flex";
     }
 
-    // handle klik Save
     const saveBtn = document.getElementById("saveStatusBtn");
     if (saveBtn) {
       saveBtn.onclick = submitStatusUpdate;
@@ -641,10 +619,8 @@ function openInvoiceModal(invoiceId) {
     const saveBtn = document.getElementById("saveStatusBtn");
     const errBox = document.getElementById("statusModalError");
 
-    // disable tombol biar gak double klik
     if (saveBtn) saveBtn.disabled = true;
 
-    // kirim AJAX ke backend
     fetch(`/invoice/${currentStatusInvoiceId}/update-status/`, {
       method: "POST",
       headers: {
@@ -659,7 +635,6 @@ function openInvoiceModal(invoiceId) {
     .then(r => r.json())
     .then(data => {
       if (data.status === "success") {
-        // update teks status di kartu (bagian bawah kartu)
         const statusSpan = document.getElementById(`status-text-${currentStatusInvoiceId}`);
         if (statusSpan) {
           statusSpan.textContent = newStatus;
@@ -702,7 +677,6 @@ function openInvoiceModal(invoiceId) {
   }
 
 
-  /* ========= Global: close on outside click & Esc ========= */
   document.addEventListener("click", (e) => {
     if (isClickOutside("invoiceModal", e)) closeModal();
     if (isClickOutside("reorderModal", e)) closeReorderModal();

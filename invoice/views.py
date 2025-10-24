@@ -21,7 +21,6 @@ def reorder_invoice(request, id):
     order = inv.order
 
     if request.method == "GET":
-        # modal preview: pakai item pertama saja untuk ringkasan
         first = order.items.select_related("product").first() if order else None
         if not first:
             return JsonResponse({"status": "error", "message": "Produk tidak tersedia."}, status=400)
@@ -36,7 +35,6 @@ def reorder_invoice(request, id):
             "image": img,
         })
 
-    # POST -> masukkan SEMUA item order ke cart
     cart = request.session.get("cart", {})
     if order:
         for it in order.items.select_related("product"):
@@ -55,21 +53,16 @@ def reorder_invoice(request, id):
 @login_required(login_url='/authenticate/login')
 @require_POST
 def delete_invoice(request, id):
-    """
-    Hapus invoice milik user, dipanggil dari modal konfirmasi.
-    """
     inv = get_object_or_404(Invoice, pk=id, user=request.user)
     inv.delete()
     return JsonResponse({"status": "success"})
 
 
-# --- Utility untuk generate nomor invoice ---
 def generate_invoice_no(user_id: int) -> str:
     now = datetime.datetime.now()
     return f"INV{now:%Y%m%d}-{user_id}-{now:%H%M%S}"
 
 
-# --- Tampilkan semua invoice milik user login ---
 def show_invoices(request):
     invoices = Invoice.objects.filter(user=request.user).select_related('order').order_by('-date')
     for inv in invoices:
@@ -80,14 +73,12 @@ def show_invoices(request):
     return render(request, "invoice.html", {"invoices": invoices})
 
 
-# --- Tampilkan detail satu invoice ---
 @login_required(login_url='/authenticate/login')
 def invoice_detail(request, id):
     invoice = get_object_or_404(Invoice, pk=id, user=request.user)
     return render(request, "invoice_detail.html", {"invoice": invoice})
 
 
-# --- Buat invoice baru berdasarkan Order yang sudah ada ---
 @login_required(login_url='/authenticate/login')
 def create_invoice(request):
     invoice_created = False
@@ -99,10 +90,9 @@ def create_invoice(request):
             invoice.date = timezone.now().date()
             invoice.invoice_no = generate_invoice_no(request.user.id)
 
-            # Ambil order dari form (misal ada field 'order' di InvoiceForm)
             order_id = form.cleaned_data.get("order")
             if order_id:
-                invoice.order = order_id  # kalau form-nya pakai ModelChoiceField ke Order
+                invoice.order = order_id
             invoice.save()
 
             invoice_created = True
@@ -116,7 +106,6 @@ def create_invoice(request):
     })
 
 
-# --- Endpoint JSON untuk detail invoice (ambil data dari order) ---
 @login_required(login_url='/authenticate/login')
 def invoice_detail_json(request, id):
     invoice = get_object_or_404(Invoice, pk=id, user=request.user)
@@ -155,10 +144,6 @@ def invoice_detail_json(request, id):
 @login_required(login_url='/authenticate/login')
 @require_POST
 def update_status(request, id):
-    """
-    Ubah status order yg terkait invoice[id] milik user saat ini.
-    Body: {"status": "Paid"}
-    """
     invoice = get_object_or_404(Invoice, pk=id, user=request.user)
     order = invoice.order
     if not order:
