@@ -4,8 +4,18 @@
     <title>Shopping Cart</title>
     
     <style>
-        main {
-            padding-top: 70px !important
+        .head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0px clamp(20px, 7vw, 60px) 10px;
+        }
+        .head .content {
+            color: #000;
+            font-size: 1em;
+            font-weight: 600;
+            line-height: normal;
+            border-bottom: 2px dashed #005F73;
         }
         .modal {
             display: none;
@@ -48,6 +58,20 @@
             border: 1px solid #ccc; 
             border-radius: 4px;
         }
+        .cart-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px;
+        }
+        .cart-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            padding: 0 clamp(20px, 7vw, 60px) 10px;
+            justify-content: flex-end;
+            align-items: flex-start;
+        }
     </style>
 {% endblock meta %}
 
@@ -56,16 +80,18 @@
 {% include 'navbar.html' %}
 <main>
 {% if user.is_authenticated %}
-<div class="cart-container" style="max-width: 960px; margin: 40px auto; padding: 0 20px;">
+<div class="cart-container">
 
-    <h1 style="font-size: 24px; font-weight: bold; padding-bottom: 10px; border-bottom: 2px dashed #ccc; margin-bottom: 30px;">
-        Review your cart
-    </h1>
-
+    <div class="head">
+        <h1 class="content">
+            Review your cart
+        </h1>
+    </div>
+    
     <div class="cart-items-list">
         
         {% for item in cart_items %}
-        <div class="cart-item" style="display: flex; align-items: flex-start; margin-bottom: 25px; padding-bottom: 25px; border-bottom: 1px solid #eee;">
+        <div class="cart-item">
             
             <div class="item-image" style="margin-right: 20px;">
                 <img src="{{ item.product.image }}" alt="{{ item.product.name }}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 5px;">
@@ -115,9 +141,8 @@
         {% endfor %}
 
     </div>
-
     {% if cart_items %}
-    <div class="cart-summary" style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #ccc; text-align: right;">
+    <div class="cart-summary" style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #005F73; text-align: right;">
         
         <h2 style="font-size: 1.8rem; font-weight: bold; margin-bottom: 20px;">
             Total Belanja: Rp{{ total_cart_price }}

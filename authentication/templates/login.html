@@ -106,7 +106,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
       message.className = "px-4 py-3 rounded-md text-sm border bg-green-50 border-green-200 text-green-700";
 
       setTimeout(() => {
-        window.location.href = "{% url 'main:show_main' %}";
+        window.location.href = data.next_url;
       }, 800);
     } else {
       message.textContent = data.errors?.__all__?.[0] || "Invalid credentials!";

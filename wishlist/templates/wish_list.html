@@ -5,6 +5,20 @@
 {% include "navbar.html" %}
 <main>
 <style>
+.head {
+    display: flex;
+    padding: 10px 20px;
+    align-items: center;
+    gap: 10px;
+    padding: 0px clamp(20px, 7vw, 60px) 10px;
+}
+.head .content {
+    color: #000;
+    font-size: 1em;
+    font-weight: 600;
+    line-height: normal;
+    border-bottom: 2px dashed #005F73;
+}
 .wl-btn {
   display: inline-flex;
   align-items: center;
@@ -127,9 +141,8 @@ div[style*="border-bottom:2px dashed #005F73"]::after {
       </div>
     {% else %}
     <!-- Header -->
-      <div class="flex items-center gap-2 px-5 py-2"
-           style="border-bottom:2px dashed #005F73; padding:10px 20px;">
-        <h2 style="color:#000; font-family:Poppins, sans-serif; font-size:24px; font-weight:600; line-height:normal;">
+      <div class="head">
+        <h2 class="content">
           Your wishlist is here!
         </h2>
       </div>
