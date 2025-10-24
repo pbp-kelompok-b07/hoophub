@@ -16,7 +16,7 @@ LOGIN_URL = '/authentication/login/'
 
 def show_report(request):
     if request.user.is_authenticated:
-        if request.user.is_staff or 'admin' in request.user.username.lower():
+        if request.user.username.lower() == 'admin':
             report_list = Report.objects.all()
         else:
             report_list = Report.objects.filter(reporter=request.user)
@@ -79,7 +79,7 @@ def edit_report(request, id):
 def delete_report(request, id):
     if request.method == "POST":
         try:
-            if request.user.is_staff or request.user.is_superuser:
+            if request.user.username.lower() == 'admin':
                 report = get_object_or_404(Report, pk=id)
             else:
                 report = get_object_or_404(Report, pk=id, reporter=request.user)
@@ -93,7 +93,7 @@ def delete_report(request, id):
 
 @login_required(login_url=LOGIN_URL)
 def report_detail(request, id):
-    if request.user.is_staff or 'admin' in request.user.username.lower():
+    if request.user.username.lower() == 'admin':
         # Admin bisa lihat semua report
         report = get_object_or_404(Report, id=id)
     else:
@@ -103,7 +103,7 @@ def report_detail(request, id):
     # Kalau admin update status
     if request.method == "POST":
         new_status = request.POST.get("status")
-        if request.user.is_staff and new_status in dict(Report.STATUS_CHOICES):
+        if request.user.username.lower() == 'admin' and new_status in dict(Report.STATUS_CHOICES):
             report.status = new_status
             report.save()
             messages.success(request, f"Report status updated to {report.get_status_display()}!")
@@ -117,7 +117,7 @@ def report_detail(request, id):
 
 
 def is_admin(user):
-    return user.is_staff or user.is_superuser
+    return user.username.lower() == 'admin'
 
 @user_passes_test(is_admin)
 def admin_report_list(request):

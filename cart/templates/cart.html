@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 
 {% block meta %}
-    <title>Shopping Cart</title>
+    <title>hoophub - Shopping Cart</title>
     
     <style>
         .head {
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 0px clamp(20px, 7vw, 60px) 10px;
+            padding: 0px 0px 10px 0px;
         }
         .head .content {
             color: #000;
@@ -72,6 +72,9 @@
             justify-content: flex-end;
             align-items: flex-start;
         }
+        .cart-inner {
+            padding: 0 clamp(20px, 7vw, 60px);
+        }
     </style>
 {% endblock meta %}
 
@@ -82,79 +85,79 @@
 {% if user.is_authenticated %}
 <div class="cart-container">
 
-    <div class="head">
-        <h1 class="content">
-            Review your cart
-        </h1>
-    </div>
-    
-    <div class="cart-items-list">
+    <div class="cart-inner">
+        <div class="head">
+            <h1 class="content">
+                Review your cart
+            </h1>
+        </div>
         
-        {% for item in cart_items %}
-        <div class="cart-item">
+        <div class="cart-items-list pt-4">
             
-            <div class="item-image" style="margin-right: 20px;">
-                <img src="{{ item.product.image }}" alt="{{ item.product.name }}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 5px;">
-            </div>
-
-            <div class="item-details" style="flex: 1;">
+            {% for item in cart_items %}
+            <div class="cart-item">
                 
-                <h3 style="font-size: 1.1rem; font-weight: bold; margin: 0 0 5px 0;">{{ item.product.name }}</h3>
-                
-                <p style="font-size: 0.9rem; color: #777; margin: 0 0 10px 0;">
-                    Brand: {{ item.product.brand | capfirst }}
-                </p>
+                <div class="item-image" style="margin-right: 20px;">
+                    <img src="{{ item.product.image }}" alt="{{ item.product.name }}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 5px;">
+                </div>
 
-                <h4 style="font-size: 1.1rem; font-weight: normal; margin: 0 0 5px 0;">
-                    Harga Satuan: Rp{{ item.product.price }}
-                </h4>
-                <h4 style="font-size: 1.1rem; font-weight: normal; margin: 0 0 10px 0;">
-                    Kuantitas: {{ item.quantity }}
-                </h4>
-                <h4 style="font-size: 1.2rem; font-weight: bold; margin: 0 0 10px 0;">
-                    Subtotal: Rp{{ item.item_total }}
-                </h4>
+                <div class="item-details" style="flex: 1;">
+                    
+                    <h3 style="font-size: 1.1rem; font-weight: bold; margin: 0 0 5px 0;">{{ item.product.name }}</h3>
+                    
+                    <p style="font-size: 0.9rem; color: #777; margin: 0 0 10px 0;">
+                        Brand: {{ item.product.brand | capfirst }}
+                    </p>
 
-                <p style="font-size: 0.9rem; color: #555; margin: 0 0 15px 0; line-height: 1.5;">
-                    {{ item.product.description }}
-                </p>
+                    <h4 style="font-size: 1.1rem; font-weight: normal; margin: 0 0 5px 0;">
+                        Price: Rp{{ item.product.price }}
+                    </h4>
+                    <h4 style="font-size: 1.1rem; font-weight: normal; margin: 0 0 10px 0;">
+                        Quantity: {{ item.quantity }}
+                    </h4>
+                    <h4 style="font-size: 1.2rem; font-weight: bold; margin: 0 0 10px 0;">
+                        Subtotal: Rp{{ item.item_total }}
+                    </h4>
 
-                <div class="item-actions">
-                    <form action="{% url 'cart:remove_from_cart' item.id %}" method="POST" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-delete" 
-                                style="background-color: #c9302c; color: white; padding: 8px 15px; border: none; border-radius: 5px; font-size: 0.9rem; font-weight: bold; cursor: pointer;">
-                            Delete
-                        </button>
-                    </form>
+                    <p style="font-size: 0.9rem; color: #555; margin: 0 0 15px 0; line-height: 1.5;">
+                        {{ item.product.description|linebreaksbr }}
+                    </p>
+
+                    <div class="item-actions pb-4">
+                        <form action="{% url 'cart:remove_from_cart' item.id %}" method="POST" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-delete" 
+                                    style="background-color: #c9302c; color: white; padding: 8px 15px; border: none; border-radius: 5px; font-size: 0.9rem; font-weight: bold; cursor: pointer;">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
+            {% empty %}
+            <div class="cart-empty" style="text-align: center; padding: 50px 20px;">
+                <h2 style="font-weight: bold; color: #555;">Your cart is empty.</h2>
+                <p style="color: #777; margin-bottom: 30px;">Looks like you haven't added anything to your cart yet.</p>
+                <a href="{% url 'catalog:product_list' %}" style="background-color: #EE9B00; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                    Shop Now
+                </a>
+            </div>
+            {% endfor %}
         </div>
-        {% empty %}
-        <div class="cart-empty" style="text-align: center; padding: 50px 20px;">
-            <h2 style="font-weight: bold; color: #555;">Your cart is empty.</h2>
-            <p style="color: #777; margin-bottom: 30px;">Looks like you haven't added anything to your cart yet.</p>
-            <a href="{% url 'catalog:product_list' %}" style="background-color: #EE9B00; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                Shop Now
-            </a>
+        {% if cart_items %}
+        <div class="cart-summary" style="margin-top: 30px; padding: 0px clamp(20px, 7vw, 60px) 10px; border-top: 2px dashed #005F73; text-align: right;">
+            
+            <h2 style="font-size: 1.8rem; font-weight: bold; margin-bottom: 20px;">
+                Total: Rp{{ total_cart_price }}
+            </h2>
+            
+            <button id="openCheckoutModal" class="btn-checkout-total"
+            style="background-color: #EE9B00; color: white; padding: 12px 25px; text-decoration: none; border: none; border-radius: 5px; font-size: 1.1rem; font-weight: bold; cursor: pointer;">
+                Checkout
+            </button>
         </div>
-        {% endfor %}
-
+        {% endif %}
     </div>
-    {% if cart_items %}
-    <div class="cart-summary" style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #005F73; text-align: right;">
-        
-        <h2 style="font-size: 1.8rem; font-weight: bold; margin-bottom: 20px;">
-            Total Belanja: Rp{{ total_cart_price }}
-        </h2>
-        
-        <button id="openCheckoutModal" class="btn-checkout-total"
-           style="background-color: #EE9B00; color: white; padding: 12px 25px; text-decoration: none; border: none; border-radius: 5px; font-size: 1.1rem; font-weight: bold; cursor: pointer;">
-            Lanjut ke Checkout
-        </button>
-    </div>
-    {% endif %}
-
 </div>
 
 <div id="checkoutModal" class="modal">
@@ -167,7 +170,7 @@
             {% csrf_token %}
 
             <div class="summary" style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
-                <h4 style="font-weight: bold;">Ringkasan Belanja</h4>
+                <h4 style="font-weight: bold;">Shopping Cart</h4>
                 <ul style="list-style-type: none; padding-left: 0;">
                     {% for item in cart_items %}
                     <li style="display: flex; justify-content: space-between;">
@@ -186,25 +189,25 @@
             </div>
 
             <div style="margin-bottom: 15px;">
-                <label for="full_name" style="display: block; margin-bottom: 5px; font-weight: bold;">Nama Lengkap</label>
+                <label for="full_name" style="display: block; margin-bottom: 5px; font-weight: bold;">Full name</label>
                 <input type="text" name="full_name" id="full_name" required class="form-input">
             </div>
             <div style="margin-bottom: 15px;">
-                <label for="address" style="display: block; margin-bottom: 5px; font-weight: bold;">Alamat</label>
+                <label for="address" style="display: block; margin-bottom: 5px; font-weight: bold;">Address</label>
                 <input type="text" name="address" id="address" required class="form-input">
             </div>
             <div style="margin-bottom: 15px;">
-                <label for="city" style="display: block; margin-bottom: 5px; font-weight: bold;">Kota</label>
+                <label for="city" style="display: block; margin-bottom: 5px; font-weight: bold;">City</label>
                 <input type="text" name="city" id="city" required class="form-input">
             </div>
             <div style="margin-bottom: 20px;">
-                <label for="postal_code" style="display: block; margin-bottom: 5px; font-weight: bold;">Kode Pos</label>
+                <label for="postal_code" style="display: block; margin-bottom: 5px; font-weight: bold;">Postcode</label>
                 <input type="text" name="postal_code" id="postal_code" required class="form-input">
             </div>
 
             <button id="submitCheckoutBtn" type="submit" 
                     style="background-color: #007bff; color: white; padding: 12px 25px; border: none; border-radius: 5px; font-size: 1.1rem; font-weight: bold; cursor: pointer; width: 100%;">
-                Bikin Invoice
+                Make Invoice
             </button>
         </form>
 
@@ -253,7 +256,7 @@
                 e.preventDefault(); 
                 
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = "Membuat invoice...";
+                submitBtn.innerHTML = "Making invoice...";
                 errorDiv.style.display = 'none';
 
                 const formData = new FormData(form);
@@ -276,15 +279,15 @@
                         errorDiv.innerHTML = data.body.message;
                         errorDiv.style.display = 'block';
                         submitBtn.disabled = false;
-                        submitBtn.innerHTML = "Bikin Invoice";
+                        submitBtn.innerHTML = "Make Invoice";
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    errorDiv.innerHTML = 'Terjadi kesalahan jaringan. Silakan coba lagi.';
+                    errorDiv.innerHTML = 'Error. Try again later.';
                     errorDiv.style.display = 'block';
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = "Bikin Invoice";
+                    submitBtn.innerHTML = "Make Invoice";
                 });
             });
         }

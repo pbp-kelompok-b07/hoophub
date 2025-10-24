@@ -4,14 +4,14 @@
 <main>
 <div class="max-w-2xl mx-auto py-10">
   <h2 class="text-3xl font-bold text-[#005C67] mb-8 text-center">
-    {% if product %}Edit Produk{% else %}Tambah Produk Baru{% endif %}
+    {% if product %}Edit Product{% else %}Add Product{% endif %}
   </h2>
   <form method="post" enctype="multipart/form-data" class="space-y-5 bg-white p-8 rounded-xl shadow-md">
     {% csrf_token %}
     {{ form.as_p }}
     <div class="text-center">
-      <button type="submit" class="bg-[#005C67] text-white px-6 py-2 rounded-lg hover:bg-[#007681]">Simpan</button>
-      <a href="{% url 'catalog:product_list' %}" class="ml-3 text-gray-500 hover:text-[#005C67]">Batal</a>
+      <button type="submit" class="bg-[#005C67] text-white px-6 py-2 rounded-lg hover:bg-[#007681]">Save</button>
+      <a href="{% url 'catalog:product_list' %}" class="ml-3 text-gray-500 hover:text-[#005C67]">Cancel</a>
     </div>
   </form>
 </div>

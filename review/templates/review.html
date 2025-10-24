@@ -133,7 +133,7 @@
 {% if user.is_authenticated %}
     <div class="head">
         <span class="content">
-            {% if 'admin' in request.user.username.lower %}
+            {% if user.username == "Admin" or user.username == "admin" %}
                 Look at all the reviews!
             {% else %}
                 Look back at your reviews!

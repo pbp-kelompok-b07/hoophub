@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
-
+{% block meta %}
+    <title>hoophub - Wishlist</title>
+{% endblock meta %}
 {% block content %}
 {% include "navbar.html" %}
 <main>
@@ -95,7 +97,7 @@ div[style*="border-bottom:2px dashed #005F73"]::after {
   gap:12px;
   align-items:center;
   justify-content:flex-end;
-  padding: 12px 20px;
+  padding: 0px clamp(20px, 7vw, 60px) 10px;
   margin-top: 8px;
   margin-bottom: 6px;
   flex-wrap:wrap;
@@ -179,7 +181,7 @@ div[style*="border-bottom:2px dashed #005F73"]::after {
     <div id="wl-messages" class="px-5 py-3"></div>
 
     <!-- GRID WRAPPER -->
-    <div id="wish-grid" class="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12 px-8 py-6">
+    <div id="wish-grid" class="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12 px-14 py-6">
       {% if wish_items %}
         {% for item in wish_items %}
           {% with product=item.product %}
