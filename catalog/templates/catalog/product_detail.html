@@ -1,6 +1,75 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block meta %}
+<style>
+  .review-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        padding: 20px;
+    }
+    .review-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 20px;
+        padding: 0 clamp(20px, 7vw, 60px) 10px;
+        justify-content: flex-end;
+        align-items: flex-start;
+    }
+    .review-details {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+    .review-date {
+        font-size: 0.8em;
+        font-style: italic;
+    }
+    .review-product-image {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+        flex-shrink: 0;
+    }
+    .review-product-content {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .review-product-name {
+        color: #000;
+        font-size: 1.1em;
+        font-weight: 600;
+        color: #000;
+    }
+    .review-product-price {
+        color: #000;
+        font-size: 1em;
+        font-weight: 500;
+        color: #000;
+    }
+    .review-message {
+        color: #343A40;
+        font-size: 1em;
+        font-weight: 400;
+        overflow-wrap: break-word;
+    }
+    .rating {
+        display: flex;
+    }
+    .rating .star {
+        font-size: 1.5em;
+        color: #D9D9D9;
+    }
+    .rating .star.rated {
+        font-size: 1.5em;
+        color: #EE9B00;
+    }
+</style>
+{% endblock meta %}
+
 {% block content %}
 {% include 'navbar.html' %}
 
@@ -43,17 +112,67 @@
         {% endif %}
       </div>
 
-      <div>
-        <button type="button" class="mb-6 px-4 py-2 bg-[#EE9B00] text-white font-semibold rounded-lg hover:bg-[#CA6702] transition" onclick="showCreateReviewModal({{ p.id }})">
-            Review
-        </button>
-      </div>
+      <!-- hanya user yang sudah login yang bisa lihat button review, dan admin/user belum login tidak bisa lihat buttonnya -->
+      {% if user.is_authenticated and 'admin' not in request.user.username.lower %}
+        <div>
+          <button type="button" class="mb-6 px-4 py-2 bg-[#EE9B00] text-white font-semibold rounded-lg hover:bg-[#CA6702] transition" onclick="showCreateReviewModal({{ p.id }})">
+              Review
+          </button>
+        </div>
+      {% endif %}
 
       <h2 class="text-xl font-semibold text-[#0f5257] mb-3">Description</h2>
       <div class="prose max-w-none text-gray-700 leading-relaxed">
         {{ p.description|linebreaksbr|default:"No description." }}
       </div>
+
+      <h2 class="text-xl font-semibold text-[#0f5257] mb-3 mt-6">Reviews</h2>
+      <div id="review-container" class="flex flex-col gap-5"></div>
     </div>
   </div>
 </div>
+
+<script>
+  function stars(rating) {
+      let stars = '';
+      for (let i = 1; i <= 5; i++) { // kalau ada rating, kasih class 'rated' (untuk kasih style)
+          stars += `<span class="star ${i <= rating ? 'rated' : ''}">&#9733;</span>`;
+      }
+      return stars;
+  }
+
+  async function loadProductReview() {
+    const productId = {{ p.pk }};
+    const reviewContainer = document.getElementById('review-container');
+
+    reviewContainer.innerHTML = '';
+
+    const response = await fetch(`/catalog/review/${productId}`);
+    const reviews = await response.json();
+
+    if (reviews.length === 0) {
+      reviewContainer.innerHTML = `<h2>No reviews yet.</h2>`;
+      return;
+    }
+
+    reviews.forEach(review => { reviewContent = `
+        <div class="flex flex-col md:flex-row items-start justify-start">
+          <div class="review-details">
+              <p class="font-semibold text-[0.8em]">${review.user}</p>
+              <p class="review-date">${review.date}</p>
+              <div class="rating">
+                  ${stars(review.rating)}
+              </div>
+              <h3 class="review-message">${review.review}</h3>
+          </div>
+        </div>
+      `;
+        reviewContainer.innerHTML += reviewContent;
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    loadProductReview();
+  });
+</script>
 {% endblock %}

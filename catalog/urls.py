@@ -14,4 +14,6 @@ urlpatterns = [
      path('<int:pk>/', views.product_detail, name='product_detail'),
     # endpoint JSON (AJAX)
     path('json/', views.products_json, name='products_json'),
+
+    path('review/<int:pk>/', views.get_reviews, name='get_reviews')
 ]
