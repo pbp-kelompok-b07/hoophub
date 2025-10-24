@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block meta %}
-<title>hoophub</title>
+<title>Admin - Report Detail</title>
 {% endblock meta %}
 
 {% block content %}
@@ -11,19 +11,34 @@
 <div class="max-w-3xl mx-auto mt-10 bg-white shadow-lg rounded-2xl p-8 mb-16">
   <h1 class="text-3xl font-bold text-gray-800 mb-6 pb-6">Report Detail</h1>
 
-  <!-- Status badge -->
+  {% if messages %}
   <div class="mb-4">
-    <span class="
-      px-3 py-1 rounded-full text-sm font-semibold
-      {% if report.status == 'pending' %} bg-yellow-100 text-yellow-700
-      {% elif report.status == 'resolved' %} bg-green-100 text-green-700
-      {% elif report.status == 'rejected' %} bg-red-100 text-red-700
-      {% endif %}
-    ">
-      {{ report.get_status_display }}
-    </span>
+    {% for message in messages %}
+      <div class="px-4 py-2 rounded-md 
+        {% if message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Status section -->
+  <div class="mb-4">
+    <form method="POST" class="flex items-center gap-4">
+      {% csrf_token %}
+      <label for="status" class="font-semibold text-gray-700">Status:</label>
+      <select id="status" name="status" class="border rounded-md px-3 py-1 text-sm">
+        <option value="pending" {% if report.status == 'pending' %}selected{% endif %}>Pending</option>
+        <option value="resolved" {% if report.status == 'resolved' %}selected{% endif %}>Resolved</option>
+        <option value="rejected" {% if report.status == 'rejected' %}selected{% endif %}>Rejected</option>
+      </select>
+      <button type="submit" class="bg-[#005F73] text-white px-4 py-1 rounded-lg hover:bg-[#0a6b81] text-sm">
+        Update
+      </button>
+    </form>
   </div>
 
+  <!-- Report details -->
   <div class="space-y-4 text-gray-700">
     <div>
       <h2 class="font-semibold text-lg text-gray-900">Report Title</h2>
@@ -65,27 +80,8 @@
     </div>
   </div>
 
-  {% if user.is_staff %}
-  <!-- Admin can change report status -->
-  <form method="POST" class="mt-6">
-    {% csrf_token %}
-    <div class="flex items-center gap-3">
-      <label for="status" class="font-semibold text-gray-700">Status:</label>
-      <select name="status" id="status" class="border rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-[#005F73]">
-        {% for value, label in report.STATUS_CHOICES %}
-          <option value="{{ value }}" {% if report.status == value %}selected{% endif %}>{{ label }}</option>
-        {% endfor %}
-      </select>
-      <button type="submit" class="bg-[#005F73] hover:bg-[#0A9396] text-white px-4 py-2 rounded-lg transition">
-        Update
-      </button>
-    </div>
-  </form>
-  {% endif %}
-
-  <!-- Back button: sama untuk semua user -->
   <div class="mt-8 flex justify-end">
-    <a href="{% url 'report:show_report' %}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition">Back</a>
+    <a href="{% url 'report:admin_report_list' %}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition">Back</a>
   </div>
 </div>
 </main>
