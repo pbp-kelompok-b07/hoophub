@@ -15,7 +15,7 @@ class Product(models.Model):
     description = models.TextField(blank=True, null=True)  
     price = models.DecimalField(max_digits=10, decimal_places=0)
     stock = models.PositiveIntegerField(default=0)
-    image = models.URLField(blank=True, null=True)
+    image = models.URLField(max_length=1000, blank=True, null=True)
     release_date = models.DateField(blank=True, null=True)
     is_available = models.BooleanField(default=True)
     rating = models.FloatField(default=0)
