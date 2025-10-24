@@ -15,13 +15,50 @@ def is_ajax(request):
 def wishlist_list(request):
     """
     Tampilkan daftar wishlist milik user yang sedang login.
+    Mendukung filter brand dan sorting via query params:
+      - ?brand=<brand_name>
+      - ?sort=date_desc (default), date_asc, price_desc, price_asc
     """
     if not request.user.is_authenticated:
         # user belum login -> render halaman minta login
         return render(request, "wish_list.html", {"anonymous": True})
-    # user sudah login -> ambil dan render wishlist
-    wish_items = Wishlist.objects.filter(user=request.user).select_related("product").order_by("-date_added")
-    return render(request, "wish_list.html", {"wish_items": wish_items})
+
+    # ambil semua wishlist user, kemudian apply filter / sort sesuai query params
+    qs = Wishlist.objects.filter(user=request.user).select_related("product")
+
+    # available brands (hanya brand yang ada di wishlist user) untuk opsi filter
+    brand_qs = Product.objects.filter(in_wishlists__user=request.user).order_by().values_list("brand", flat=True).distinct()
+    # normalisasi: buang None/empty
+    brands = [b for b in brand_qs if b]
+
+    # baca parameter GET
+    selected_brand = request.GET.get("brand", "").strip()
+    sort = request.GET.get("sort", "date_desc").strip()
+
+    # filter by brand jika ada
+    if selected_brand:
+        qs = qs.filter(product__brand=selected_brand)
+
+    # sorting
+    if sort == "date_asc":
+        qs = qs.order_by("date_added")
+    elif sort == "price_asc":
+        # join product and order by product.price ascending; fallback to date_added to make order deterministic
+        qs = qs.order_by("product__price", "-date_added")
+    elif sort == "price_desc":
+        qs = qs.order_by("-product__price", "-date_added")
+    else:  # default date_desc
+        qs = qs.order_by("-date_added")
+
+    wish_items = list(qs.select_related("product"))
+
+    context = {
+        "wish_items": wish_items,
+        "brands": brands,
+        "selected_brand": selected_brand,
+        "selected_sort": sort,
+    }
+    return render(request, "wish_list.html", context)
 
 @login_required
 def add_to_wishlist(request, product_id):

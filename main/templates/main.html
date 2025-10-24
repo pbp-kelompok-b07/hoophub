@@ -148,7 +148,7 @@
                 <div class="features-detail">
                     <span>Your gear is in the cart and you're ready to make your move. Our checkout process is designed like a perfect fast break, quick, intuitive, and straight to the finish.</span>
                 </div>
-                <a href="/" class="explore-button">Explore</a>
+                <a href="{% url 'cart:show_cart' %}" class="explore-button">Explore</a>
             </div>
         </div>
 
@@ -176,17 +176,17 @@
                 </div>
             </div>
 
-            <div class="features-card">
-                <div class="features-content">
-                    <div class="features-title">
-                        <span>Wishlist</span>
-                    </div>
-                    <div class="features-detail">
-                        <span>Eyeing a new pair of signature sneakers or the latest team apparel? Add them to your lineup. When you're prepared to make the move, your future favorites are just a click away.</span>
-                    </div>
-                    <a href="/" class="explore-button">Explore</a>
+        <div class="features-card">
+            <div class="features-content">
+                <div class="features-title">
+                    <span>Wishlist</span>
                 </div>
+                <div class="features-detail">
+                    <span>Eyeing a new pair of signature sneakers or the latest team apparel? Add them to your lineup. When you're prepared to make the move, your future favorites are just a click away.</span>
+                </div>
+                <a href="{% url 'wishlist:list' %}" class="explore-button">Explore</a>
             </div>
+        </div>
 
         </div>
     </div>

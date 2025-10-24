@@ -27,7 +27,6 @@
 .btn-add-cart { background: #EE9B00; color: #fff; }
 .btn-remove-wl { background: #BB3E03; color: #fff; }
 
-/* label di dalam tombol, aman untuk truncation */
 .wl-btn .btn-label {
   display: inline-block;
   max-width: 100%;
@@ -37,15 +36,33 @@
   vertical-align: middle;
 }
 
-/* Override inline border-bottom pada container header (tidak merubah HTML) */
+/* small meta text under title */
+.wish-meta {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  margin-top: 6px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+.wish-meta .brand {
+  font-weight: 500;
+}
+.wish-meta .price {
+  font-weight: 600;
+}
+.wish-meta .dateadded {
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+/* keep existing override for header shortline if present */
 div[style*="border-bottom:2px dashed #005F73"] {
-  /* hapus border inline yang ada */
   border-bottom: none !important;
   position: relative;
   padding-bottom: 14px !important;
 }
-
-/* pseudo-element: garis pendek, dashed, terpusat */
 div[style*="border-bottom:2px dashed #005F73"]::after {
   content: "";
   position: absolute;
@@ -56,6 +73,42 @@ div[style*="border-bottom:2px dashed #005F73"]::after {
   border-bottom: 2px dashed #005F73;
   pointer-events: none;
   box-sizing: border-box;
+}
+
+/* filter bar styling (simple, consistent with your design) */
+.filter-bar {
+  display:flex;
+  gap:12px;
+  align-items:center;
+  justify-content:flex-end;
+  padding: 12px 20px;
+  margin-top: 8px;
+  margin-bottom: 6px;
+  flex-wrap:wrap;
+}
+.filter-select, .filter-button {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #E6E6E6;
+  font-size: 0.95rem;
+  background: white;
+}
+.filter-button {
+  background: #EE9B00;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+.reset-link {
+  color: #005F73;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* small responsive tweaks to keep layout stable */
+@media (max-width: 768px) {
+  .filter-bar { justify-content: center; }
+  .wish-meta { flex-direction: column; gap:4px; }
 }
 </style>
 
@@ -80,21 +133,48 @@ div[style*="border-bottom:2px dashed #005F73"]::after {
           Your wishlist is here!
         </h2>
       </div>
-    
+
+      <!-- FILTER BAR -->
+      <form method="get" class="filter-bar" id="wishlist-filter-form" action="{% url 'wishlist:list' %}">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <label for="brand" style="font-size:0.95rem; color:#444;">Brand</label>
+          <select name="brand" id="brand" class="filter-select">
+            <option value="">All</option>
+            {% for b in brands %}
+              <option value="{{ b }}" {% if b == selected_brand %}selected{% endif %}>{{ b }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div style="display:flex; gap:8px; align-items:center;">
+          <label for="sort" style="font-size:0.95rem; color:#444;">Sort</label>
+          <select name="sort" id="sort" class="filter-select">
+            <option value="date_desc" {% if selected_sort == 'date_desc' or not selected_sort %}selected{% endif %}>Date (Newest)</option>
+            <option value="date_asc" {% if selected_sort == 'date_asc' %}selected{% endif %}>Date (Oldest)</option>
+            <option value="price_desc" {% if selected_sort == 'price_desc' %}selected{% endif %}>Price (Highest)</option>
+            <option value="price_asc" {% if selected_sort == 'price_asc' %}selected{% endif %}>Price (Lowest)</option>
+          </select>
+        </div>
+
+        <div style="margin-left:8px;">
+          <!-- reset: remove query params (handled via AJAX) -->
+          <a class="reset-link" href="{% url 'wishlist:list' %}">Reset</a>
+        </div>
+      </form>
 
     <!-- Messages -->
     <div id="wl-messages" class="px-5 py-3"></div>
 
-    <!-- GRID WRAPPER (HIGHLIGHT) -->
+    <!-- GRID WRAPPER -->
     <div id="wish-grid" class="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12 px-8 py-6">
       {% if wish_items %}
         {% for item in wish_items %}
           {% with product=item.product %}
 
-          <!-- CARD (keperluan desain: ukuran tetap untuk desktop; responsive di mobile) -->
           <div class="wish-card rounded-2xl overflow-hidden bg-[#005F73] p-6 flex flex-col md:flex-row items-center gap-6"
                data-wishlist-id="{{ item.pk }}" data-product-id="{{ product.pk }}">
-            <!-- Image box -->
+
+            <!-- Image -->
             <a href="{% if product.get_absolute_url %}{{ product.get_absolute_url }}{% else %}{% url 'catalog:product_detail' product.pk %}{% endif %}"
                class="block flex-shrink-0">
               {% if product.image %}
@@ -108,7 +188,7 @@ div[style*="border-bottom:2px dashed #005F73"]::after {
               {% endif %}
             </a>
 
-            <!-- Title & buttons -->
+            <!-- Title + meta + buttons -->
             <div class="flex-1 flex flex-col items-center text-white"
                  style="min-width:0; height:150px; justify-content:space-between;">
 
@@ -131,9 +211,21 @@ div[style*="border-bottom:2px dashed #005F73"]::after {
                 </p>
               </a>
 
-              <!-- Buttons di bawah -->
+              <!-- meta: brand, price, date_added -->
+              <div class="wish-meta">
+                {% if product.brand %}
+                  <span class="brand">{{ product.brand }}</span>
+                {% endif %}
+                {% if product.price %}
+                  <span class="price">Rp {{ product.price }}</span>
+                {% endif %}
+                {% if item.date_added %}
+                  <span class="dateadded">{{ item.date_added|date:"M d, Y H:i" }}</span>
+                {% endif %}
+              </div>
+
+              <!-- Buttons -->
               <div class="mt-auto flex justify-center gap-4 w-full">
-                <!-- Add to cart -->
                 <button
                   class="wl-btn btn-add-cart"
                   data-product-id="{{ product.pk }}"
@@ -143,7 +235,6 @@ div[style*="border-bottom:2px dashed #005F73"]::after {
                   <span class="btn-label">Add to cart</span>
                 </button>
 
-                <!-- Delete -->
                 <button
                   class="wl-btn btn-remove-wl"
                   data-wishlist-id="{{ item.pk }}"
@@ -162,13 +253,13 @@ div[style*="border-bottom:2px dashed #005F73"]::after {
         <div class="col-span-2 p-6">
           <p class="text-gray-600">Your wishlist is empty.</p>
         </div>
-      {% endif %}
+      {% endif %}   
     </div>
-    {% endif %}
+    {% endif %} 
   </div>
 </div>
 
-<!-- SCRIPT: AJAX handlers (HIGHLIGHT: menggunakan data-url, bukan replace trick) -->
+<!-- SCRIPT: AJAX handlers (remove/add already AJAX); add AJAX filter + reset + history) -->
 <script>
 /* CSRF helper (sama seperti sebelumnya) */
 function getCookie(name) {
@@ -196,16 +287,21 @@ function flashMessage(msg, type='info') {
   setTimeout(()=> el.remove(), 3500);
 }
 
+/* ======================
+   Delegated click handlers
+   - Remove from wishlist (AJAX POST)
+   - Add to cart (AJAX POST)
+   These use event delegation and closest(), so they still work
+   after we replace #wish-grid innerHTML via AJAX.
+   ====================== */
 document.addEventListener('click', async function(e) {
-  // ----------------- Remove from wishlist -----------------
+  // Remove
   const removeBtn = e.target.closest('.btn-remove-wl');
   if (removeBtn) {
     const btn = removeBtn;
-    const wlId = btn.dataset.wishlistId;
     const url = btn.dataset.url;
     if (!url) return;
     btn.disabled = true;
-
     try {
       const resp = await fetch(url, {
         method: 'POST',
@@ -231,6 +327,10 @@ document.addEventListener('click', async function(e) {
       } else if (resp.status === 403) {
         flashMessage('Permission denied', 'error');
         btn.disabled = false;
+      } else if (resp.status === 401) {
+        // not authenticated
+        flashMessage('Please sign in to manage your wishlist', 'error');
+        btn.disabled = false;
       } else {
         flashMessage('Server error', 'error');
         btn.disabled = false;
@@ -240,10 +340,10 @@ document.addEventListener('click', async function(e) {
       flashMessage('Network error', 'error');
       btn.disabled = false;
     }
-    return; // selesai handling remove
+    return;
   }
 
-  // ----------------- Add to cart -----------------
+  // Add to cart
   const addBtn = e.target.closest('.btn-add-cart');
   if (addBtn) {
     const btn = addBtn;
@@ -251,7 +351,6 @@ document.addEventListener('click', async function(e) {
     const url = btn.dataset.url;
     if (!productId || !url) return;
     btn.disabled = true;
-
     try {
       const resp = await fetch(url, {
         method: 'POST',
@@ -266,8 +365,11 @@ document.addEventListener('click', async function(e) {
 
       if (resp.ok) {
         let data = {};
-        try { data = await resp.json(); } catch (_) { /* not JSON */ }
+        try { data = await resp.json(); } catch (_) {}
         flashMessage(data.message || 'Added to cart', 'success');
+        btn.disabled = false;
+      } else if (resp.status === 401) {
+        flashMessage('Please sign in to add to cart', 'error');
         btn.disabled = false;
       } else {
         flashMessage('Failed to add to cart', 'error');
@@ -278,9 +380,145 @@ document.addEventListener('click', async function(e) {
       flashMessage('Network error', 'error');
       btn.disabled = false;
     }
-    return; // selesai handling add
+    return;
   }
 });
+
+(function() {
+  const form = document.getElementById('wishlist-filter-form');
+  const brandSelect = document.getElementById('brand');
+  const sortSelect  = document.getElementById('sort');
+  const grid = document.getElementById('wish-grid');
+  const resetLink = document.querySelector('.reset-link');
+
+  if (!form || !grid) return;
+
+  // loader overlay (attached to grid's parent)
+  function showGridLoading() {
+    let loader = document.getElementById('wl-grid-loader');
+    if (!loader) {
+      loader = document.createElement('div');
+      loader.id = 'wl-grid-loader';
+      loader.style.position = 'absolute';
+      loader.style.left = 0;
+      loader.style.top = 0;
+      loader.style.right = 0;
+      loader.style.bottom = 0;
+      loader.style.background = 'rgba(255,255,255,0.6)';
+      loader.style.display = 'flex';
+      loader.style.alignItems = 'center';
+      loader.style.justifyContent = 'center';
+      loader.style.zIndex = 40;
+      loader.innerHTML = '<div style="padding:8px 12px;border-radius:8px;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.08)">Loading...</div>';
+      // ensure parent positioned
+      grid.parentElement.style.position = grid.parentElement.style.position || 'relative';
+      grid.parentElement.appendChild(loader);
+    }
+    loader.style.display = 'flex';
+  }
+  function hideGridLoading() {
+    const loader = document.getElementById('wl-grid-loader');
+    if (loader) loader.style.display = 'none';
+  }
+
+  function buildUrlFromForm() {
+    const params = new URLSearchParams();
+    if (brandSelect && brandSelect.value) params.set('brand', brandSelect.value);
+    if (sortSelect && sortSelect.value) params.set('sort', sortSelect.value);
+    const base = form.getAttribute('action') || window.location.pathname;
+    const url = params.toString() ? `${base}?${params.toString()}` : base;
+    return url;
+  }
+
+  async function fetchAndReplaceGrid(url, pushHistory = true) {
+    try {
+      showGridLoading();
+      const res = await fetch(url, {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'text/html'
+        }
+      });
+
+      if (!res.ok) {
+        // fallback to full navigation
+        window.location.href = url;
+        return;
+      }
+
+      const text = await res.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(text, 'text/html');
+
+      // Replace grid
+      const newGrid = doc.querySelector('#wish-grid');
+      if (newGrid) {
+        grid.innerHTML = newGrid.innerHTML;
+      } else {
+        window.location.href = url;
+        return;
+      }
+
+      // Replace messages
+      const newMsgs = doc.querySelector('#wl-messages');
+      const msgsBox = document.getElementById('wl-messages');
+      if (newMsgs && msgsBox) msgsBox.innerHTML = newMsgs.innerHTML;
+
+      // Update brand select options (so available brands reflect active filters)
+      const newBrandSelect = doc.querySelector('#brand');
+      if (newBrandSelect && brandSelect) {
+        brandSelect.innerHTML = newBrandSelect.innerHTML;
+        // try to keep selection from url
+        const paramBrand = new URL(url, window.location.origin).searchParams.get('brand') || '';
+        brandSelect.value = paramBrand;
+      }
+
+      // update reset link if server changed it
+      const newReset = doc.querySelector('.reset-link');
+      if (newReset && resetLink) resetLink.href = newReset.href;
+
+      // update address bar
+      if (pushHistory) {
+        window.history.pushState({ wishlistAjax: true }, '', url);
+      }
+
+      // Note: delegated event listeners still work after replacing innerHTML
+    } catch (err) {
+      console.error('Error fetching wishlist grid', err);
+      // fallback to full navigation
+      // window.location.href = url;
+    } finally {
+      hideGridLoading();
+    }
+  }
+
+  // attach change listeners to selects to trigger AJAX filtering
+  brandSelect?.addEventListener('change', function() {
+    const url = buildUrlFromForm();
+    fetchAndReplaceGrid(url, true);
+  });
+  sortSelect?.addEventListener('change', function() {
+    const url = buildUrlFromForm();
+    fetchAndReplaceGrid(url, true);
+  });
+
+  // reset link via AJAX
+  resetLink?.addEventListener('click', function(e) {
+    e.preventDefault();
+    const url = resetLink.href;
+    if (brandSelect) brandSelect.value = '';
+    if (sortSelect) sortSelect.value = 'date_desc';
+    fetchAndReplaceGrid(url, true);
+  });
+
+  // handle browser back/forward
+  window.addEventListener('popstate', function() {
+    const url = location.pathname + location.search;
+    fetchAndReplaceGrid(url, false);
+  });
+})();
 </script>
 </main>
 {% endblock %}
