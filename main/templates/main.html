@@ -114,8 +114,7 @@
 </div>
 
 <div class="features">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-4 md:px-20">
-
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-4 md:px-20 pb-20">
         <div class="features-card">
             <div class="features-content">
                 <div class="features-title">
@@ -151,31 +150,28 @@
                 <a href="{% url 'cart:show_cart' %}" class="explore-button">Explore</a>
             </div>
         </div>
-
-            <div class="features-card">
-                <div class="features-content">
-                    <div class="features-title">
-                        <span>Invoice</span>
-                    </div>
-                    <div class="features-detail">
-                        <span>Review every great play from your shopping history. Review your purchase details with ease. It's your personal record of all the gear that has fueled your game.</span>
-                    </div>
-                    <a href="/" class="explore-button">Explore</a>
+        <div class="features-card">
+            <div class="features-content">
+                <div class="features-title">
+                    <span>Invoice</span>
                 </div>
-            </div>
-
-            <div class="features-card">
-                <div class="features-content">
-                    <div class="features-title">
-                        <span>Report</span>
-                    </div>
-                    <div class="features-detail">
-                        <span>If you've encountered a problem with your order, use this feature to report any issue, and our support team will immediately review the play. We're here to make the right call.</span>
-                    </div>
-                    <a href="{% url 'report:show_report' %}" class="explore-button">Explore</a>
+                <div class="features-detail">
+                    <span>Review every great play from your shopping history. Review your purchase details with ease. It's your personal record of all the gear that has fueled your game.</span>
                 </div>
+                <a href="{% url 'invoice:show_invoices' %}" class="explore-button">Explore</a>
             </div>
-
+        </div>
+        <div class="features-card">
+            <div class="features-content">
+                <div class="features-title">
+                    <span>Report</span>
+                </div>
+                <div class="features-detail">
+                    <span>If you've encountered a problem with your order, use this feature to report any issue, and our support team will immediately review the play. We're here to make the right call.</span>
+                </div>
+                <a href="{% url 'report:show_report' %}" class="explore-button">Explore</a>
+            </div>
+        </div>
         <div class="features-card">
             <div class="features-content">
                 <div class="features-title">
@@ -187,8 +183,7 @@
                 <a href="{% url 'wishlist:list' %}" class="explore-button">Explore</a>
             </div>
         </div>
-
-        </div>
     </div>
 </main>
 {% endblock content %}
+

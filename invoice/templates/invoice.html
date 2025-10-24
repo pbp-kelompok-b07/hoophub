@@ -1,0 +1,700 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load l10n %}
+
+
+{% block meta %}
+<title>hoophub — Invoices</title>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar.html' %}
+
+<main>
+    {% if user.is_authenticated %}
+      <div class="pt-[0px] px-[40px]">
+      <h2 style="padding: 0px 50px 0px 50px; font-weight: 700; color: #000; font-size:20px">
+        Track your past orders!
+      </h2>
+      <hr style="border: none; border-top: 2px dashed #005F73; margin: 10px 50px 30px 50px;">
+
+      {% if invoices %}
+        {% for inv in invoices %}
+          {% with order_obj=inv.order %}
+            {% if order_obj %}
+              {% with order_items=order_obj.items.all %}
+                {% with first_item=order_items|first %}
+
+                  <!-- KARTU SATU INVOICE -->
+                  <div id="invoice-card-{{ inv.id }}"
+                      style="
+                        background-color:#E0E0E0;
+                        border-radius:16px;
+                        padding:20px 30px;
+                        margin:0 auto 30px auto;
+                        width:95%;
+                        max-width:1100px;
+                      " onclick="openInvoiceModal('{{ inv.id }}')">
+
+                    <!-- HEADER ATAS: info invoice kiri + tombol kanan -->
+                    <div style="
+                      display:flex;
+                      justify-content:space-between;
+                      align-items:flex-start;
+                      flex-wrap:wrap;
+                      gap:16px;
+                    ">
+                      <!-- Kiri: nomor invoice + tanggal -->
+                      <div style="flex:1 1 auto; min-width:250px;">
+                        <div style="font-weight:700;font-size:1.1rem;color:#000; margin-bottom:4px;">
+                          Invoice {{ inv.invoice_no }}
+                        </div>
+                        <div style="color:#4A4A4A;font-size:0.9rem;">
+                          {{ order_obj.created_at|date:"Y-m-d H:i" }}
+                        </div>
+                      </div>
+
+                      <!-- Kanan: status + tombol -->
+                      <div style="
+                        display:flex;
+                        flex-shrink:0;
+                        gap:10px;
+                        flex-wrap:wrap;
+                        align-items:flex-start;
+                        justify-content:flex-end;
+                      ">
+                        <button
+                          type="button"
+                          onclick="openStatusModal('{{ inv.id }}', '{{ order_obj.status }}'); event.stopPropagation();"
+                          style="
+                            background:#005F73;
+                            color:#fff;
+                            padding:8px 14px;
+                            border-radius:999px;
+                            font-weight:500;
+                            border:none;
+                            cursor:pointer;
+                            box-shadow:0 2px 4px rgba(0,0,0,0.2);
+                          "
+                        >
+                          Edit Status
+                        </button>
+
+                        <button type="button"
+                                onclick="openReorderModal('{{ inv.id }}'); event.stopPropagation();"
+                                style="
+                                  background-color:#EE9B00;
+                                  color:#fff;
+                                  padding:8px 14px;
+                                  border-radius:999px;
+                                  font-weight:500;
+                                  border:none;
+                                  cursor:pointer;
+                                  box-shadow:0 2px 4px rgba(0,0,0,0.2);
+                                ">
+                          Order again
+                        </button>
+
+                        <button type="button"
+                                onclick="openDeleteModal('{{ inv.id }}'); event.stopPropagation();"
+                                style="
+                                  background-color:#BB3E03;
+                                  color:#fff;
+                                  padding:8px 14px;
+                                  border-radius:999px;
+                                  font-weight:500;
+                                  border:none;
+                                  cursor:pointer;
+                                  box-shadow:0 2px 4px rgba(0,0,0,0.2);
+                                ">
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                    <!-- /HEADER ATAS -->
+
+                    <!-- BOX PUTIH ISI ITEM -->
+                    <div style="
+                      background:#fff;
+                      border-radius:8px;
+                      padding:16px;
+                      margin-top:16px;
+                      max-width:800px;
+                      border:1px solid #ccc;
+                    ">
+
+                      {% for oi in order_items %}
+                        <div style="
+                          display:flex;
+                          gap:16px;
+                          align-items:flex-start;
+                          padding-bottom:16px;
+                          margin-bottom:16px;
+                          border-bottom:1px solid #ccc;
+                        ">
+
+                          <!-- FOTO PRODUK -->
+                          <div style="flex-shrink:0;">
+                            {% if oi.product.image %}
+                              <img src="{{ oi.product.image|default:oi.product.image }}"
+                                  alt="{{ oi.product.name }}"
+                                  style="
+                                    width:110px;
+                                    height:110px;
+                                    object-fit:cover;
+                                    border-radius:10px;
+                                    border:1px solid #ddd;
+                                  ">
+                            {% else %}
+                              <div style="
+                                width:110px;
+                                height:110px;
+                                border-radius:10px;
+                                background:#ccc;
+                                color:#555;
+                                font-size:12px;
+                                border:1px solid #ddd;
+                                display:flex;
+                                align-items:center;
+                                justify-content:center;
+                              ">
+                                No Img
+                              </div>
+                            {% endif %}
+                          </div>
+
+                          <!-- DETAIL PRODUK -->
+                          <div style="flex:1 1 auto; min-width:0;">
+                            <div style="font-weight:600;color:#000;line-height:1.4;font-size:1rem; margin-bottom:6px;">
+                              {{ oi.product.brand|default_if_none:"" }} {{ oi.product.name }}
+                            </div>
+
+                            <div style="font-size:0.9rem;color:#444;line-height:1.5;">
+                              Qty: <b>{{ oi.quantity }}</b>
+                            </div>
+
+                            <div style="font-size:0.9rem;color:#444;line-height:1.5;">
+                              Harga Satuan:
+                              <b>
+                                Rp{{ oi.price|localize }}
+                              </b>
+                            </div>
+
+                            <div style="font-size:0.9rem;color:#444;line-height:1.5;">
+                              Subtotal:
+                              <b>
+                                Rp{{ oi.subtotal|localize }}
+                              </b>
+                            </div>
+                          </div>
+                        </div>
+                      {% endfor %}
+
+                      <!-- TOTAL ORDER -->
+                      <div style="
+                        display:flex;
+                        justify-content:space-between;
+                        align-items:flex-start;
+                        font-weight:700;
+                        color:#000;
+                        font-size:1rem;
+                        padding-top:12px;
+                      ">
+                        <span>Total :</span>
+                        <span>
+                          Rp{{ order_obj.total_price|localize }}
+                        </span>
+                      </div>
+
+                      <div style="
+                        display:flex;
+                        justify-content:space-between;
+                        align-items:flex-start;
+                        font-weight:700;
+                        color:#000;
+                        font-size:1rem;
+                        padding-top:12px;
+                      ">
+                        <span>Status :</span>
+                        <span 
+                        id="status-text-{{ inv.id }}"
+                        style="
+                          padding:4px 10px;
+                          border-radius:999px;
+                          font-weight:600;
+                          color:#fff;
+                          background-color:
+                            {% if order_obj.status == 'Pending' %}#EE9B00
+                            {% elif order_obj.status == 'Paid' %}#0A9396
+                            {% elif order_obj.status == 'Shipped' %}#005F73
+                            {% elif order_obj.status == 'Cancelled' %}#BB3E03
+                            {% else %}#666
+                            {% endif %};
+                          "
+                          >
+                          {{ order_obj.status }}</span>
+                      </div>
+
+                    </div>
+
+                  </div>
+                  <!-- /KARTU SATU INVOICE -->
+
+                {% endwith %}
+              {% endwith %}
+            {% else %}
+              <!-- fallback kalau invoice ngga punya order -->
+              <div id="invoice-card-{{ inv.id }}"
+                  style="
+                    background-color:#E0E0E0;
+                    border-radius:16px;
+                    padding:20px 30px;
+                    margin:0 auto 30px auto;
+                    width:95%;
+                    max-width:1100px;
+                  ">
+                <p style="margin:0;font-weight:600;">Invoice {{ inv.invoice_no }}</p>
+                <p style="margin:4px 0 0 0;font-size:0.9rem;color:#444;">No order data.</p>
+              </div>
+            {% endif %}
+          {% endwith %}
+        {% endfor %}
+      {% else %}
+        <p style="padding: 0px 50px; color: #666;">No invoices yet.</p>
+      {% endif %}
+    {% else %}
+      <div class="flex flex-col justify-center items-center h-[60vh] text-center px-4">
+          <h1 class="text-2xl font-bold text-gray-700 mb-2">You must be logged in.</h1>
+          <p class="text-gray-500 mb-2 max-w-md">
+              To see your invoices or add a new one, please log in to your account.
+          </p>
+          <a href="{% url 'authentication:login' %}"
+          class="bg-[#EE9B00] text-white py-3 px-5 rounded-full mt-1 hover:bg-[#CA6702] transition duration-300">
+              Login
+          </a>
+      </div>
+    {% endif %}
+  </div>
+</main>
+
+<div id="invoiceModal"
+     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background-color:rgba(0,0,0,0.5); justify-content:center; align-items:center;
+            z-index:1000;">
+  <div id="modalContent"
+       style="background:#E0E0E0; border-radius:16px; width:90%; max-width:700px;
+              padding:24px 36px; position:relative; box-shadow:0 4px 8px rgba(0,0,0,0.3);">
+    <button onclick="closeModal()"
+            style="position:absolute; top:16px; right:16px; background:none;
+                   border:none; font-size:24px; color:#333; cursor:pointer;">×</button>
+    <div id="modalBody">
+    </div>
+  </div>
+</div>
+
+<div id="reorderModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+  <div style="background:#E0E0E0; border-radius:16px; width:90%; max-width:560px; padding:24px 28px; position:relative;">
+    <button onclick="closeReorderModal()" style="position:absolute; top:12px; right:12px; background:none; border:none; font-size:24px; cursor:pointer;">×</button>
+    <div id="reorderBody">Loading...</div>
+  </div>
+</div>
+
+<div id="deleteModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+  <div style="background:#E0E0E0; border-radius:16px; width:90%; max-width:420px; padding:24px 28px; position:relative;">
+    <button onclick="closeDeleteModal()" style="position:absolute; top:12px; right:12px; background:none; border:none; font-size:24px; cursor:pointer;">×</button>
+    <div id="deleteBody">
+      <h3 style="font-weight:700; margin-bottom:12px;">Delete this invoice?</h3>
+      <p style="color:#444; margin-bottom:18px;">This action cannot be undone.</p>
+      <div style="display:flex; gap:10px; justify-content:flex-end;">
+        <button onclick="closeDeleteModal()" style="padding:8px 14px; border:none; border-radius:8px; background:#888; color:#fff; cursor:pointer;">Cancel</button>
+        <button id="confirmDeleteBtn" style="padding:8px 14px; border:none; border-radius:8px; background:#BB3E03; color:#fff; cursor:pointer;">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="statusModal"
+     style="display:none; position:fixed; inset:0;
+            background:rgba(0,0,0,0.5); z-index:1000;
+            justify-content:center; align-items:center;">
+  <div style="background:#E0E0E0; border-radius:16px;
+              width:90%; max-width:400px;
+              padding:24px 28px; position:relative;">
+    <button onclick="closeStatusModal()" style="
+              position:absolute; top:12px; right:12px;
+              background:none; border:none; font-size:24px;
+              cursor:pointer;">×</button>
+
+    <h3 style="font-weight:700; margin-bottom:16px; color:#000;">
+      Update Order Status
+    </h3>
+
+    <div style="margin-bottom:16px;">
+      <label for="statusSelect" style="display:block; font-size:0.9rem; font-weight:600; color:#000; margin-bottom:6px;">
+        Status
+      </label>
+      <select id="statusSelect" style="
+          width:100%;
+          padding:8px 10px;
+          border-radius:8px;
+          border:1px solid #aaa;
+          font-size:0.9rem;
+        ">
+        <option value="Pending">Pending</option>
+        <option value="Paid">Paid</option>
+        <option value="Shipped">Shipped</option>
+        <option value="Cancelled">Cancelled</option>
+      </select>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; gap:10px;">
+      <button onclick="closeStatusModal()" style="
+              padding:8px 14px;
+              border:none;
+              border-radius:8px;
+              background:#888;
+              color:#fff;
+              cursor:pointer;">
+        Cancel
+      </button>
+      <button id="saveStatusBtn" style="
+              padding:8px 14px;
+              border:none;
+              border-radius:8px;
+              background:#005F73;
+              color:#fff;
+              font-weight:600;
+              cursor:pointer;">
+        Save
+      </button>
+    </div>
+
+    <div id="statusModalError" style="color:#BB3E03; font-size:0.8rem; margin-top:12px; display:none;">
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+  function getCsrfToken() {
+    const m = document.cookie.match(/(?:^|;)\s*csrftoken=([^;]+)/);
+    return m ? decodeURIComponent(m[1]) : "";
+  }
+
+  function isClickOutside(modalId, evt) {
+    const el = document.getElementById(modalId);
+    return el && evt.target === el;
+  }
+
+function formatRupiah(number) {
+  if (isNaN(number)) return "0";
+  return Number(number).toLocaleString("id-ID");
+}
+
+function openInvoiceModal(invoiceId) {
+  const modal = document.getElementById("invoiceModal");
+  const modalBody = document.getElementById("modalBody");
+
+  modal.style.display = "flex";
+  modalBody.innerHTML = "<p>Loading...</p>";
+
+  fetch(`/invoice/${invoiceId}/json/`)
+    .then(r => r.json())
+    .then(data => {
+      const galleryHtml = (data.items || [])
+        .filter(it => it.image)
+        .map(it => `
+          <img
+            src="${it.image}"
+            alt="${it.name || ''}"
+            style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid #ccc;"
+          >
+        `)
+        .join("");
+
+      const itemsHtml = (data.items || []).map(it => `
+        <div style="display:flex; gap:10px; align-items:flex-start; margin-bottom:12px;">
+          ${
+            it.image
+              ? `<img src="${it.image}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid #ccc;">`
+              : `<div style="width:60px;height:60px;border-radius:8px;background:#ccc;display:flex;align-items:center;justify-content:center;font-size:10px;color:#555;">
+                    No Img
+                 </div>`
+          }
+          <div style="flex:1;">
+            <div style="font-weight:600;">${(it.brand || "")} ${it.name || ""}</div>
+            <div style="font-size:0.9rem; color:#444; line-height:1.4;">
+              Qty: ${it.quantity}
+              • Rp${formatRupiah(it.price)}
+              • Subtotal: Rp${formatRupiah(it.subtotal)}
+            </div>
+          </div>
+        </div>
+      `).join("");
+
+      modalBody.innerHTML = `
+        <h2 style="font-weight:700;color:#000;font-size:22px;margin-bottom:20px;">
+          Invoice Detail
+        </h2>
+
+        <hr style="border:none;border-top:2px dashed #005F73;margin-bottom:20px;">
+
+        ${
+          galleryHtml
+            ? `<div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;">
+                 ${galleryHtml}
+               </div>`
+            : ""
+        }
+
+        <p><b>Invoice No:</b> ${data.invoice_no}</p>
+        <p><b>Date:</b> ${data.date}</p>
+        <p><b>Full Name:</b> ${data.full_name}</p>
+        <p><b>Address:</b> ${data.address}</p>
+        <p><b>City:</b> ${data.city}</p>
+        <p><b>Postal Code:</b> ${data.postal_code}</p>
+        <p><b>Status:</b> ${data.status}</p>
+        <p><b>Total Price:</b> Rp${formatRupiah(data.total_price)}</p>
+
+        <hr style="border:none;border-top:2px dashed #005F73;margin:20px 0;">
+
+        <h3 style="font-weight:700;margin:8px 0;">Items</h3>
+        ${itemsHtml || "<p>No items.</p>"}
+      `;
+    })
+    .catch(() => {
+      modalBody.innerHTML = "<p style='color:red;'>Failed to load invoice details.</p>";
+    });
+}
+
+
+  function closeModal() {
+    document.getElementById("invoiceModal").style.display = "none";
+  }
+
+  let currentReorderId = null;
+
+  function openReorderModal(invoiceId) {
+    currentReorderId = invoiceId;
+    const modal = document.getElementById("reorderModal");
+    const body = document.getElementById("reorderBody");
+    modal.style.display = "flex";
+    body.innerHTML = "Loading...";
+
+    fetch(`/invoice/${invoiceId}/reorder/`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.status !== "success") throw new Error(d.message || "Failed");
+        body.innerHTML = `
+          <h3 style="font-weight:700; margin-bottom:10px;">Reorder</h3>
+          <div style="display:flex; gap:12px; align-items:flex-start; margin-bottom:12px;">
+            ${d.image ? `<img src="${d.image}" style="width:90px;height:90px;object-fit:cover;border-radius:8px;">` : ""}
+            <div>
+              <div style="font-weight:600;">${(d.brand || "")} ${d.name || ""}</div>
+              <div style="color:#444; margin-top:4px;">Rp${formatRupiah(d.price)}</div>
+            </div>
+          </div>
+
+          <p style="font-size:0.9rem; color:#444; margin-bottom:12px;">
+            This will add all items from this order back into your cart.
+          </p>
+
+          <button id="reorderSubmitBtn" onclick="submitReorder()"
+                  style="width:100%; padding:10px 14px; border:none; border-radius:10px; background:#005F73; color:#fff; font-weight:600; cursor:pointer;">
+            Add all to cart & Checkout
+          </button>
+        `;
+      })
+      .catch(() => {
+        body.innerHTML = `<p style="color:red;">Failed to load product.</p>`;
+      });
+  }
+
+  function closeReorderModal() {
+    document.getElementById("reorderModal").style.display = "none";
+    currentReorderId = null;
+  }
+
+  function submitReorder() {
+    if (!currentReorderId) return;
+    const btn = document.getElementById("reorderSubmitBtn");
+    btn && (btn.disabled = true);
+
+    fetch(`/invoice/${currentReorderId}/reorder/`, {
+      method: "POST",
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        "X-CSRFToken": getCsrfToken(),
+      }
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.status === "success") {
+        window.location.href = d.redirect_url;
+      } else {
+        alert(d.message || "Failed to reorder");
+      }
+    })
+    .catch(() => alert("Network error."))
+    .finally(() => { btn && (btn.disabled = false); });
+  }
+
+  let currentDeleteId = null;
+
+  function openDeleteModal(invoiceId) {
+    currentDeleteId = invoiceId;
+    document.getElementById("deleteModal").style.display = "flex";
+    const btn = document.getElementById("confirmDeleteBtn");
+    btn.onclick = confirmDelete;
+  }
+
+  function closeDeleteModal() {
+    document.getElementById("deleteModal").style.display = "none";
+    currentDeleteId = null;
+  }
+
+  function confirmDelete() {
+    if (!currentDeleteId) return;
+    const btn = document.getElementById("confirmDeleteBtn");
+    btn && (btn.disabled = true);
+
+    fetch(`/invoice/${currentDeleteId}/delete/`, {
+      method: "POST",
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        "X-CSRFToken": getCsrfToken(),
+      }
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.status === "success") {
+        const card = document.getElementById(`invoice-card-${currentDeleteId}`);
+        if (card) card.remove();
+        closeDeleteModal();
+      } else {
+        alert(d.message || "Failed to delete");
+      }
+    })
+    .catch(() => alert("Network error."))
+    .finally(() => { btn && (btn.disabled = false); });
+  }
+
+  let currentStatusInvoiceId = null;
+
+  function openStatusModal(invoiceId, currentStatus) {
+    currentStatusInvoiceId = invoiceId;
+
+    const selectEl = document.getElementById("statusSelect");
+    if (selectEl) {
+      selectEl.value = currentStatus;
+    }
+
+    const errBox = document.getElementById("statusModalError");
+    if (errBox) {
+      errBox.style.display = "none";
+      errBox.textContent = "";
+    }
+
+    const modal = document.getElementById("statusModal");
+    if (modal) {
+      modal.style.display = "flex";
+    }
+
+    const saveBtn = document.getElementById("saveStatusBtn");
+    if (saveBtn) {
+      saveBtn.onclick = submitStatusUpdate;
+    }
+  }
+
+  function closeStatusModal() {
+    const modal = document.getElementById("statusModal");
+    if (modal) {
+      modal.style.display = "none";
+    }
+    currentStatusInvoiceId = null;
+  }
+
+  function submitStatusUpdate() {
+    if (!currentStatusInvoiceId) return;
+
+    const newStatus = document.getElementById("statusSelect").value;
+    const saveBtn = document.getElementById("saveStatusBtn");
+    const errBox = document.getElementById("statusModalError");
+
+    if (saveBtn) saveBtn.disabled = true;
+
+    fetch(`/invoice/${currentStatusInvoiceId}/update-status/`, {
+      method: "POST",
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        "X-CSRFToken": getCsrfToken(),
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        status: newStatus
+      })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === "success") {
+        const statusSpan = document.getElementById(`status-text-${currentStatusInvoiceId}`);
+        if (statusSpan) {
+          statusSpan.textContent = newStatus;
+
+          let color = "#666";
+          if (newStatus === "Pending") {
+            color = "#EE9B00";
+          } else if (newStatus === "Paid") {
+            color = "#0A9396";
+          } else if (newStatus === "Shipped") {
+            color = "#005F73";
+          } else if (newStatus === "Cancelled") {
+            color = "#BB3E03";
+          }
+
+          statusSpan.style.backgroundColor = color;
+          statusSpan.style.padding = "4px 10px";
+          statusSpan.style.borderRadius = "999px";
+          statusSpan.style.fontWeight = "600";
+          statusSpan.style.color = "#fff";
+        }
+
+        closeStatusModal();
+      } else {
+        if (errBox) {
+          errBox.style.display = "block";
+          errBox.textContent = data.message || "Gagal update status.";
+        }
+      }
+    })
+    .catch(() => {
+      if (errBox) {
+        errBox.style.display = "block";
+        errBox.textContent = "Network error.";
+      }
+    })
+    .finally(() => {
+      if (saveBtn) saveBtn.disabled = false;
+    });
+  }
+
+
+  document.addEventListener("click", (e) => {
+    if (isClickOutside("invoiceModal", e)) closeModal();
+    if (isClickOutside("reorderModal", e)) closeReorderModal();
+    if (isClickOutside("deleteModal", e)) closeDeleteModal();
+    if (isClickOutside("statusModal", e)) closeStatusModal();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeModal();
+      closeReorderModal();
+      closeDeleteModal();
+      closeStatusModal();
+    }
+  });
+</script>
+
+{% endblock content %}

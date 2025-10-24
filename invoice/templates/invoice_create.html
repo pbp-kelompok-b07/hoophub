@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>hoophub — Checkout</title>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar.html' %}
+
+<main>
+  <div class="pt-[130px] px-[40px]">
+    <h2 style="padding: 0 50px; font-weight: 700; color: #000; font-size:20px">
+      Complete your payment
+    </h2>
+    <hr style="border: none; border-top: 2px dashed #005F73; margin: 10px 50px 30px 50px;">
+
+    <div style="background-color: #E0E0E0; border-radius: 16px; padding: 30px 50px;
+                margin: 0 auto; width: 95%; max-width: 700px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+      <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit"
+                style="background-color: #EE9B00; color: white; padding: 8px 24px; border-radius: 99px;
+                       font-weight: 500; border: none; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+          Pay Now
+        </button>
+      </form>
+    </div>
+
+    {% if invoice_created %}
+      <div style="text-align: center; margin-top: 30px;">
+        <h3 style="color: #005F73;">Payment Successful 🎉</h3>
+        <p>Your invoice has been created successfully.</p>
+        <a href="{% url 'main:show_main' %}"
+           style="background-color: #005F73; color: white; padding: 10px 20px;
+                  border-radius: 99px; text-decoration: none; font-weight: 500;
+                  box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+          Back to Home
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</main>
+
+{% endblock content %}

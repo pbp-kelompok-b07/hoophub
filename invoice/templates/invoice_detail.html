@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>hoophub — Invoice Detail</title>
+{% endblock meta %}
+
+{% block content %}
+<div id="invoiceModal"
+     style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5); display: flex; justify-content: center;
+            align-items: center; z-index: 1000;">
+  <div style="background: #E0E0E0; border-radius: 16px; width: 90%; max-width: 700px;
+              padding: 24px 36px; position: relative; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">
+    <button onclick="window.history.back()"
+            style="position: absolute; top: 16px; right: 16px; background: none;
+                   border: none; font-size: 24px; color: #333; cursor: pointer;">×</button>
+
+    <h2 style="font-weight: 700; color: #000; font-size: 22px; margin-bottom: 20px;">
+      Invoice Detail
+    </h2>
+    <hr style="border: none; border-top: 2px dashed #005F73; margin-bottom: 20px;">
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <p><b>Invoice No:</b> {{ invoice.invoice_no }}</p>
+      <p><b>Date:</b> {{ invoice.date }}</p>
+      <p><b>Full Name:</b> {{ invoice.full_name }}</p>
+      <p><b>Address:</b> {{ invoice.address }}</p>
+      <p><b>City:</b> {{ invoice.city }}</p>
+      <p><b>Postal Code:</b> {{ invoice.postal_code }}</p>
+      <p><b>Status:</b> {{ invoice.status }}</p>
+      <p><b>Total Price:</b> Rp{{ invoice.total_price|floatformat:2 }}</p>
+    </div>
+
+    <hr style="border: none; border-top: 2px dashed #005F73; margin: 20px 0;">
+
+    <div style="display: flex; align-items: center; gap: 16px;">
+      {% if invoice.product.image %}
+        <img src="{{ invoice.product.image }}"
+             alt="{{ invoice.product.name }}"
+             style="width: 120px; height: 120px; object-fit: cover; border-radius: 10px;">
+      {% endif %}
+      <div>
+        <h3 style="font-weight: 700; margin-bottom: 6px;">
+          {{ invoice.product.brand|default_if_none:"" }} {{ invoice.product.name }}
+        </h3>
+        <p style="margin: 0; color: #444;">Rp{{ invoice.product.price|floatformat:2 }}</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 30px; display: flex; justify-content: flex-end;">
+      <button onclick="window.history.back()"
+              style="background-color: #005F73; color: white; border: none; padding: 8px 20px;
+                     border-radius: 99px; font-weight: 500; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock content %}

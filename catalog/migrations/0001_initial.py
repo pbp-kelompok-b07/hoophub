@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('price', models.DecimalField(decimal_places=2, max_digits=10)),
                 ('stock', models.PositiveIntegerField(default=0)),
                 ('description', models.TextField()),
-                ('image', models.ImageField(blank=True, null=True, upload_to='product_images/')),
+                ('image', models.URLField(blank=True, max_length=300, null=True)),
                 ('rating', models.DecimalField(decimal_places=2, default=0.0, help_text='Average rating (0-5)', max_digits=3)),
                 ('is_available', models.BooleanField(default=True)),
                 ('release_date', models.DateField(blank=True, null=True)),

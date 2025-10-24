@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=255)),
                 ('description', models.TextField()),
                 ('category', models.CharField(choices=[('tops', 'Tops'), ('legwear', 'Legwear'), ('jaket', 'Jaket'), ('shoes', 'Shoes'), ('basketball', 'Basketball'), ('equipment', 'Equipment')], default='equipment', max_length=20)),
-                ('thumbnail', models.URLField(blank=True, null=True)),
+                ('image', models.URLField(blank=True, null=True)),
                 ('price', models.PositiveIntegerField(default=0)),
                 ('brand', models.CharField(choices=[('nike', 'Nike'), ('adidas', 'Adidas'), ('tarmak', 'Tarmak'), ('wilson', 'Wilson'), ('spalding', 'Spalding')], default='nike', max_length=20)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
