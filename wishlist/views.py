@@ -12,7 +12,6 @@ def is_ajax(request):
     # helper kecil; Django <4 punya request.is_ajax() deprecated
     return request.headers.get("x-requested-with") == "XMLHttpRequest" or request.META.get("HTTP_X_REQUESTED_WITH") == "XMLHttpRequest"
 
-@login_required
 def wishlist_list(request):
     """
     Tampilkan daftar wishlist milik user yang sedang login.

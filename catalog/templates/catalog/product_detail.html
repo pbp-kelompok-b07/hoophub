@@ -67,6 +67,41 @@
         font-size: 1.5em;
         color: #EE9B00;
     }
+
+    /* wishlist button specific */
+    .wishlist-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color .15s ease, transform .06s ease;
+      border: none;
+      outline: none;
+      text-decoration: none;
+    }
+    .wishlist-btn:active { transform: translateY(1px); }
+    .wishlist-btn .heart {
+      width: 18px;
+      height: 18px;
+      display: inline-block;
+      line-height: 0;
+      vertical-align: middle;
+      font-size: 0;
+    }
+    .wishlist-btn.added {
+      background-color: #ffd8a8; /* soft highlight when added */
+      color: #9b4d00;
+    }
+    /* keep Review button style consistent */
+    .review-action-group {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
 </style>
 {% endblock meta %}
 
@@ -115,9 +150,23 @@
       <!-- hanya user yang sudah login yang bisa lihat button review, dan admin/user belum login tidak bisa lihat buttonnya -->
       {% if user.is_authenticated and 'admin' not in request.user.username.lower %}
         <div>
-          <button type="button" class="mb-6 px-4 py-2 bg-[#EE9B00] text-white font-semibold rounded-lg hover:bg-[#CA6702] transition" onclick="showCreateReviewModal({{ p.id }})">
-              Review
-          </button>
+          <div class="review-action-group">
+            <button type="button" class="mb-6 px-4 py-2 bg-[#EE9B00] text-white font-semibold rounded-lg hover:bg-[#CA6702] transition" onclick="showCreateReviewModal({{ p.id }})" id="review-btn-{{ p.id }}">
+                Review
+            </button>
+
+            <!-- ADD TO WISHLIST BUTTON (di sebelah tombol Review) -->
+            <button id="wishlist-btn-{{ p.id }}" data-product-id="{{ p.id }}" class="wishlist-btn mb-6 bg-white border border-[#EEE] text-[#0f5257]" onclick="handleWishlistClick(event, {{ p.id }})" aria-pressed="false" title="Add to wishlist">
+              <!-- heart icon (outline by default) -->
+              <span class="heart" aria-hidden="true" id="wishlist-heart-{{ p.id }}">
+                <!-- outline heart SVG -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20.8 6.6c-1.8-2-4.9-2-6.8-.2L12 8l-1.9-1.6c-1.9-1.8-5-1.8-6.8.2-2 2.1-2 5.5 0 7.6L12 21l8.8-6.8c2-2.1 2-5.5 0-7.6z"/>
+                </svg>
+              </span>
+              <span id="wishlist-text-{{ p.id }}">Add to wishlist</span>
+            </button>
+          </div>
         </div>
       {% endif %}
 
@@ -135,7 +184,7 @@
 <script>
   function stars(rating) {
       let stars = '';
-      for (let i = 1; i <= 5; i++) { // kalau ada rating, kasih class 'rated' (untuk kasih style)
+      for (let i = 1; i <= 5; i++) {
           stars += `<span class="star ${i <= rating ? 'rated' : ''}">&#9733;</span>`;
       }
       return stars;
@@ -171,8 +220,170 @@
     });
   }
 
+  // --- CSRF helper (standard Django cookie approach) ---
+  function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+              }
+          }
+      }
+      return cookieValue;
+  }
+
+  // --- wishlist endpoints (template tags) ---
+  const WISHLIST_LIST_URL = "{% url 'wishlist:list' %}";
+  const WISHLIST_TOGGLE_URL = "{% url 'wishlist:toggle_wishlist' p.id %}";
+
+  // --- set button visual to "added" state ---
+  function setWishlistButtonAdded(productId) {
+    const btn = document.getElementById(`wishlist-btn-${productId}`);
+    const heart = document.getElementById(`wishlist-heart-${productId}`);
+    const textEl = document.getElementById(`wishlist-text-${productId}`);
+    if (!btn || !heart || !textEl) return;
+    btn.classList.add('added');
+    btn.setAttribute('aria-pressed', 'true');
+    textEl.textContent = 'Added to wishlist';
+    heart.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="#EE9B00" stroke="none">
+        <path d="M12 21s-7.043-4.682-9.4-7.03C-0.05 11.31.9 7.5 4.1 6c1.7-.8 3.6-.6 4.9.6L12 9.3l2.99-2.7c1.3-1.2 3.2-1.4 4.9-.6 3.2 1.5 4.1 5.31 1.5 7.97C19.043 16.318 12 21 12 21z"/>
+      </svg>`;
+  }
+  function setWishlistButtonRemoved(productId) {
+    const btn = document.getElementById(`wishlist-btn-${productId}`);
+    const heart = document.getElementById(`wishlist-heart-${productId}`);
+    const textEl = document.getElementById(`wishlist-text-${productId}`);
+    if (!btn || !heart || !textEl) return;
+    btn.classList.remove('added');
+    btn.setAttribute('aria-pressed', 'false');
+    textEl.textContent = 'Add to wishlist';
+    heart.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.8 6.6c-1.8-2-4.9-2-6.8-.2L12 8l-1.9-1.6c-1.9-1.8-5-1.8-6.8.2-2 2.1-2 5.5 0 7.6L12 21l8.8-6.8c2-2.1 2-5.5 0-7.6z"/>
+      </svg>`;
+  }
+
+  // --- check on load if this product already in wishlist ---
+  async function checkIfInWishlistOnLoad(productId) {
+    try {
+      const res = await fetch(WISHLIST_LIST_URL, { credentials: 'same-origin' });
+      if (!res.ok) return;
+      const text = await res.text();
+      // The wishlist page renders .wish-card with data-product-id="{{ product.pk }}"
+      const needle = `data-product-id="${productId}"`;
+      if (text.indexOf(needle) !== -1) {
+        setWishlistButtonAdded(productId);
+      } else {
+        setWishlistButtonRemoved(productId);
+      }
+    } catch (e) {
+      // ignore network errors silently
+      console.error('checkIfInWishlistOnLoad error', e);
+    }
+  }
+
+  // --- Broadcast + LocalStorage notifier so wishlist page can refresh itself (if open) ---
+  function notifyWishlistChanged(productId, added) {
+    try {
+      // BroadcastChannel (modern browsers)
+      if (window.BroadcastChannel) {
+        const bc = new BroadcastChannel('wishlist_channel');
+        bc.postMessage({ productId, added, ts: Date.now() });
+        bc.close();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
+    try {
+      // localStorage event (triggers storage event in other tabs)
+      localStorage.setItem('wishlist_changed', JSON.stringify({ productId, added, ts: Date.now() }));
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // --- Wishlist toggle handler ---
+  async function handleWishlistClick(event, productId) {
+    event.preventDefault();
+    const btn = document.getElementById(`wishlist-btn-${productId}`);
+    const textEl = document.getElementById(`wishlist-text-${productId}`);
+    if (!btn) return;
+
+    const csrftoken = getCookie('csrftoken');
+
+    // optimistic UI disable
+    btn.disabled = true;
+    btn.style.opacity = 0.85;
+
+    try {
+      const res = await fetch(WISHLIST_TOGGLE_URL, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrftoken,
+          'Accept': 'application/json',
+        },
+        credentials: 'same-origin',
+      });
+
+      if (!res.ok) {
+        console.error('Wishlist toggle failed', res.status);
+        textEl.textContent = 'Action failed';
+        setTimeout(() => {
+          const state = btn.classList.contains('added') ? 'Added to wishlist' : 'Add to wishlist';
+          textEl.textContent = state;
+        }, 1200);
+      } else {
+        let data = {};
+        try { data = await res.json(); } catch (e) { /* no JSON body */ }
+
+        // prefer explicit `added` boolean from backend
+        let added = null;
+        if (typeof data.added !== 'undefined') {
+          added = !!data.added;
+        } else if (typeof data.removed !== 'undefined') {
+          added = !data.removed;
+        } else {
+          // fallback: toggle current class
+          added = !btn.classList.contains('added');
+        }
+
+        if (added) {
+          setWishlistButtonAdded(productId);
+        } else {
+          setWishlistButtonRemoved(productId);
+        }
+
+        // notify other tabs/pages
+        notifyWishlistChanged(productId, added);
+      }
+    } catch (err) {
+      console.error('Error toggling wishlist:', err);
+      textEl.textContent = 'Network error';
+      setTimeout(() => {
+        const state = btn.classList.contains('added') ? 'Added to wishlist' : 'Add to wishlist';
+        textEl.textContent = state;
+      }, 1200);
+    } finally {
+      btn.disabled = false;
+      btn.style.opacity = 1;
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', function() {
     loadProductReview();
+
+    // only attempt wishlist check if wishlist button exists (user authenticated)
+    const productId = {{ p.pk }};
+    const wishlistBtn = document.getElementById(`wishlist-btn-${productId}`);
+    if (wishlistBtn) {
+      checkIfInWishlistOnLoad(productId);
+    }
   });
 </script>
 {% endblock %}

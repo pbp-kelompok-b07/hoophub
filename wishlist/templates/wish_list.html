@@ -36,6 +36,27 @@
   white-space: nowrap;
   vertical-align: middle;
 }
+
+/* Override inline border-bottom pada container header (tidak merubah HTML) */
+div[style*="border-bottom:2px dashed #005F73"] {
+  /* hapus border inline yang ada */
+  border-bottom: none !important;
+  position: relative;
+  padding-bottom: 14px !important;
+}
+
+/* pseudo-element: garis pendek, dashed, terpusat */
+div[style*="border-bottom:2px dashed #005F73"]::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 6px;
+  width: 1220px;
+  border-bottom: 2px dashed #005F73;
+  pointer-events: none;
+  box-sizing: border-box;
+}
 </style>
 
 <div class="max-w-full flex justify-center">
@@ -87,7 +108,7 @@
 
             <!-- Title & buttons -->
             <div class="flex-1 flex flex-col items-center text-white"
-                style="width:236px; height:150px; justify-content:space-between;">
+                 style="min-width:0; height:150px; justify-content:space-between;">
 
               <!-- Title -->
               <a href="{% if product.get_absolute_url %}{{ product.get_absolute_url }}{% else %}{% url 'catalog:product_detail' product.pk %}{% endif %}">
@@ -129,6 +150,9 @@
                 >
                   <span class="btn-label">Delete</span>
                 </button>
+              </div>
+            </div>
+          </div>
 
           {% endwith %}
         {% endfor %}
@@ -170,9 +194,10 @@ function flashMessage(msg, type='info') {
 }
 
 document.addEventListener('click', async function(e) {
-  // Remove from wishlist
-  if (e.target.matches('.btn-remove-wl')) {
-    const btn = e.target;
+  // ----------------- Remove from wishlist -----------------
+  const removeBtn = e.target.closest('.btn-remove-wl');
+  if (removeBtn) {
+    const btn = removeBtn;
     const wlId = btn.dataset.wishlistId;
     const url = btn.dataset.url;
     if (!url) return;
@@ -193,7 +218,6 @@ document.addEventListener('click', async function(e) {
       if (resp.status === 200) {
         const data = await resp.json();
         if (data.deleted) {
-          // remove card from DOM
           const card = btn.closest('.wish-card');
           card?.remove();
           flashMessage('Item removed from wishlist', 'success');
@@ -213,11 +237,13 @@ document.addEventListener('click', async function(e) {
       flashMessage('Network error', 'error');
       btn.disabled = false;
     }
+    return; // selesai handling remove
   }
 
-  // Add to cart (calls cart add endpoint) — HIGHLIGHT: use data-url
-  if (e.target.matches('.btn-add-cart')) {
-    const btn = e.target;
+  // ----------------- Add to cart -----------------
+  const addBtn = e.target.closest('.btn-add-cart');
+  if (addBtn) {
+    const btn = addBtn;
     const productId = btn.dataset.productId;
     const url = btn.dataset.url;
     if (!productId || !url) return;
@@ -236,7 +262,6 @@ document.addEventListener('click', async function(e) {
       });
 
       if (resp.ok) {
-        // try parse JSON returned by cart view (make cart view return JSON on AJAX)
         let data = {};
         try { data = await resp.json(); } catch (_) { /* not JSON */ }
         flashMessage(data.message || 'Added to cart', 'success');
@@ -250,6 +275,7 @@ document.addEventListener('click', async function(e) {
       flashMessage('Network error', 'error');
       btn.disabled = false;
     }
+    return; // selesai handling add
   }
 });
 </script>
