@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('catalog', '0006_alter_product_category'),
+        ('catalog', '__latest__'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

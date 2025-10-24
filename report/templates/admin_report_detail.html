@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>Admin - Report Detail</title>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar.html' %}
+<main>
+<div class="max-w-3xl mx-auto mt-10 bg-white shadow-lg rounded-2xl p-8 mb-16">
+  <h1 class="text-3xl font-bold text-gray-800 mb-6 pb-6">Report Detail</h1>
+
+  {% if messages %}
+  <div class="mb-4">
+    {% for message in messages %}
+      <div class="px-4 py-2 rounded-md 
+        {% if message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Status section -->
+  <div class="mb-4">
+    <form method="POST" class="flex items-center gap-4">
+      {% csrf_token %}
+      <label for="status" class="font-semibold text-gray-700">Status:</label>
+      <select id="status" name="status" class="border rounded-md px-3 py-1 text-sm">
+        <option value="pending" {% if report.status == 'pending' %}selected{% endif %}>Pending</option>
+        <option value="resolved" {% if report.status == 'resolved' %}selected{% endif %}>Resolved</option>
+        <option value="rejected" {% if report.status == 'rejected' %}selected{% endif %}>Rejected</option>
+      </select>
+      <button type="submit" class="bg-[#005F73] text-white px-4 py-1 rounded-lg hover:bg-[#0a6b81] text-sm">
+        Update
+      </button>
+    </form>
+  </div>
+
+  <!-- Report details -->
+  <div class="space-y-4 text-gray-700">
+    <div>
+      <h2 class="font-semibold text-lg text-gray-900">Report Title</h2>
+      <p>{{ report.title }}</p>
+    </div>
+
+    <div>
+      <h2 class="font-semibold text-lg text-gray-900">Description</h2>
+      <p>{{ report.description|default:"Empty..." }}</p>
+    </div>
+
+    <div>
+      <h2 class="font-semibold text-lg text-gray-900">Report Type</h2>
+      <p>{{ report.get_report_type_display }}</p>
+    </div>
+
+    {% if report.reported_product %}
+    <div>
+      <h2 class="font-semibold text-lg text-gray-900">Reported Product</h2>
+      <p>{{ report.reported_product.name }}</p>
+    </div>
+    {% endif %}
+
+    {% if report.reported_user %}
+    <div>
+      <h2 class="font-semibold text-lg text-gray-900">Reported User</h2>
+      <p>{{ report.reported_user.username }}</p>
+    </div>
+    {% endif %}
+
+    <div>
+      <h2 class="font-semibold text-lg text-gray-900">Reporter</h2>
+      <p class="pb-8">{{ report.reporter.username }}</p>
+    </div>
+
+    <div class="flex justify-between text-sm text-gray-500 mt-6">
+      <p><span class="font-semibold text-gray-700">Made:</span> {{ report.created_at|date:"d M Y, H:i" }}</p>
+      <p><span class="font-semibold text-gray-700">Updated:</span> {{ report.updated_at|date:"d M Y, H:i" }}</p>
+    </div>
+  </div>
+
+  <div class="mt-8 flex justify-end">
+    <a href="{% url 'report:admin_report_list' %}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition">Back</a>
+  </div>
+</div>
+</main>
+{% endblock content %}

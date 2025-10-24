@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>hoophub</title>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar.html' %}
+<main>
+<div class="max-w-3xl mx-auto mt-10 bg-white shadow-lg rounded-2xl p-8 mb-16">
+  <h1 class="text-3xl font-bold text-gray-800 mb-6 pb-6">Report Detail</h1>
+
+  <!-- Status badge -->
+  <div class="mb-4">
+    <span class="
+      px-3 py-1 rounded-full text-sm font-semibold
+      {% if report.status == 'pending' %} bg-yellow-100 text-yellow-700
+      {% elif report.status == 'resolved' %} bg-green-100 text-green-700
+      {% elif report.status == 'rejected' %} bg-red-100 text-red-700
+      {% endif %}
+    ">
+      {{ report.get_status_display }}
+    </span>
+  </div>
+
+  <div class="space-y-4 text-gray-700">
+    <div>
+      <h2 class="font-semibold text-lg text-gray-900">Report Title</h2>
+      <p>{{ report.title }}</p>
+    </div>
+
+    <div>
+      <h2 class="font-semibold text-lg text-gray-900">Description</h2>
+      <p>{{ report.description|default:"Empty..." }}</p>
+    </div>
+
+    <div>
+      <h2 class="font-semibold text-lg text-gray-900">Report Type</h2>
+      <p>{{ report.get_report_type_display }}</p>
+    </div>
+
+    {% if report.reported_product %}
+    <div>
+      <h2 class="font-semibold text-lg text-gray-900">Reported Product</h2>
+      <p>{{ report.reported_product.name }}</p>
+    </div>
+    {% endif %}
+
+    {% if report.reported_user %}
+    <div>
+      <h2 class="font-semibold text-lg text-gray-900">Reported User</h2>
+      <p>{{ report.reported_user.username }}</p>
+    </div>
+    {% endif %}
+
+    <div>
+      <h2 class="font-semibold text-lg text-gray-900">Reporter</h2>
+      <p class="pb-8">{{ report.reporter.username }}</p>
+    </div>
+
+    <div class="flex justify-between text-sm text-gray-500 mt-6">
+      <p><span class="font-semibold text-gray-700">Made:</span> {{ report.created_at|date:"d M Y, H:i" }}</p>
+      <p><span class="font-semibold text-gray-700">Updated:</span> {{ report.updated_at|date:"d M Y, H:i" }}</p>
+    </div>
+  </div>
+
+  {% if user.is_staff %}
+  <!-- Admin can change report status -->
+  <form method="POST" class="mt-6">
+    {% csrf_token %}
+    <div class="flex items-center gap-3">
+      <label for="status" class="font-semibold text-gray-700">Status:</label>
+      <select name="status" id="status" class="border rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-[#005F73]">
+        {% for value, label in report.STATUS_CHOICES %}
+          <option value="{{ value }}" {% if report.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="bg-[#005F73] hover:bg-[#0A9396] text-white px-4 py-2 rounded-lg transition">
+        Update
+      </button>
+    </div>
+  </form>
+  {% endif %}
+
+  <!-- Back button: sama untuk semua user -->
+  <div class="mt-8 flex justify-end">
+    <a href="{% url 'report:show_report' %}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition">Back</a>
+  </div>
+</div>
+</main>
+{% endblock content %}

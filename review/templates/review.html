@@ -128,7 +128,7 @@
 
 {% block content %}
 {% include 'navbar.html' %}
-
+<main>
 <!-- tampilan untuk user yang sudah login -->
 {% if user.is_authenticated %}
     <div class="head">
@@ -283,5 +283,6 @@
     </div>
 
 {% endif %}
+</main>
 {% endblock content %}
 

@@ -100,7 +100,121 @@
       <button type="button" id="deleteCancelButton" class="order-2 sm:order-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-50 transition-colors text-center" onclick="hideDeleteModal()">Cancel</button>
       <button type="button" id="deleteButton" class="order-1 sm:order-2 flex-1 bg-blue-500 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-600 transition-colors">Delete</button>
     </div>
+  </div>
 </div>
+
+<div id="reportModal" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 hidden z-50">
+  <div class="bg-white rounded-lg shadow-lg w-11/12 md:w-1/2 lg:w-1/3 max-h-screen overflow-y-auto">
+    <!-- Header -->
+    <div class="flex justify-between items-center border-b px-6 py-4">
+      <h2 class="text-xl font-extrabold text-gray-800">Report Product</h2>
+      <button onclick="closeReportModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+    </div>
+
+    <!-- Body -->
+    <div class="p-6 space-y-4">
+      <form id="reportForm">
+        {% csrf_token %}
+        <input type="hidden" name="object_id" id="reportObjectId">
+        <input type="hidden" name="report_type" value="product">
+
+        <div>
+          <label class="block text-sm font-light text-gray-700 mb-1">Report Title</label>
+          <input type="text" name="title" id="reportTitle"
+            placeholder="Enter report title"
+            class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#101010] placeholder:text-sm">
+        </div>
+
+        <div class="pt-3">
+          <label class="block text-sm font-light text-gray-700 mb-1">Description</label>
+          <textarea name="description" id="reportDescription"
+            placeholder="Describe the problem found..."
+            class="w-full border rounded-lg px-3 py-2 h-28  focus:outline-none focus:ring-2 focus:ring-[#101010] placeholder:text-sm"></textarea>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex flex-col md:flex-row justify-end gap-4 pt-5 pb-1">
+          <!-- Cancel -->
+          <button type="button" onclick="closeReportModal()"
+            class="order-2 sm:order-1 w-full md:w-auto px-4 py-3 border border-gray-300 rounded-md text-gray-700 font-normal hover:bg-gray-100">
+            Cancel
+          </button>
+          <!-- Submit -->
+          <button type="submit"
+            class="order-1 sm:order-2 w-full px-6 py-3 bg-[#F5A623] text-white font-normal rounded-md hover:bg-[#ca6702]">
+            Submit
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="editReportModal" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 hidden z-50">
+  <div class="bg-white rounded-lg shadow-lg w-11/12 md:w-1/2 lg:w-1/3 max-h-screen overflow-y-auto">
+
+    <!-- Header -->
+    <div class="flex justify-between items-center border-b px-6 py-4">
+      <h2 class="text-xl font-extrabold text-gray-800"> Edit Report</h2>
+      <button onclick="closeEditReportModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+    </div>
+
+    <!-- Body -->
+    <div class="p-6 space-y-4">
+      <form id="editReportForm">
+        {% csrf_token %}
+        <input type="hidden" id="editReportId" name="report_id">
+
+        <div>
+          <label class="block text-sm font-light text-gray-700 mb-1">Report Title</label>
+          <input type="text" name="title" id="editReportTitle"
+            class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#101010] placeholder:text-sm">
+        </div>
+
+        <div class="pt-3">
+          <label class="block text-sm font-light text-gray-700 mb-1">Description</label>
+          <textarea name="description" id="editReportDescription"
+            class="w-full border rounded-lg px-3 py-2 h-28  focus:outline-none focus:ring-2 focus:ring-[#101010] placeholder:text-sm"></textarea>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex flex-col md:flex-row justify-end gap-4 pt-5 pb-1">
+          <!-- Cancel -->
+          <button type="button" onclick="closeEditReportModal()"
+            class="order-2 sm:order-1 w-full md:w-auto px-4 py-3 border border-gray-300 rounded-md text-gray-700 font-normal hover:bg-gray-100">
+            Cancel
+          </button>
+          <!-- Submit -->
+          <button type="submit"
+            class="order-1 sm:order-2 w-full px-6 py-3 bg-[#F5A623] text-white font-normal rounded-md hover:bg-[#ca6702]">
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="deleteReportModal" class="hidden fixed inset-0 z-50 w-full flex items-center justify-center bg-gray-800 bg-opacity-50">
+  <div id="deleteReportModalContent" class="bg-white rounded-lg shadow-lg w-5/6 sm:w-3/5 md:w-1/2 lg:w-2/5 xl:w-1/3 max-h-screen overflow-y-auto">
+
+  <div class="flex items-center justify-between p-4 border-b">
+    <div>
+      <h3 class="text-xl font-semibold text-gray-900">
+        Delete Report
+      </h3>
+      <p class="text-sm text-gray-600 mt-1">Are you sure you want to delete this report?</p>
+    </div>
+    <input type="hidden" id="reportIdDelete" name="report_id">
+    <button onclick="hideDeleteReportModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+  </div>
+
+  <div class="flex flex-col sm:flex-row gap-4 p-6 border-t border-gray-200 rounded-b">
+    <button type="button" id="deleteCancelButton" class="order-2 sm:order-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-50 transition-colors text-center" onclick="hideDeleteReportModal()">Cancel</button>
+    <button type="button" id="deleteReportButton" class="order-1 sm:order-2 flex-1 bg-blue-500 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-600 transition-colors" style="background-color: #EE9B00">Delete</button>
+  </div>
+</div>
+
 
 <script>
   function showModal() {
@@ -124,7 +238,7 @@
     document.getElementById('submitReview').textContent = "Submit";
 
     showModal();
-}
+  }
 
   async function showEditReviewModal(reviewId) {
     const modal = document.getElementById('reviewModal');
@@ -259,7 +373,7 @@
       hideDeleteModal();
       loadReview();
     }
-  };
+  }
 
   document.getElementById("reviewForm").addEventListener("submit", function(e) {
     e.preventDefault();
@@ -271,11 +385,170 @@
     else { // kalau belum ada reviewId (berarti belum ada review), maka create
       createReview();
     }
-  });
+  })
 
   document.getElementById("deleteButton").addEventListener("click", function(e) {
     e.preventDefault();
     const reviewId = document.getElementById('reviewIdDelete').value;
     deleteReview(reviewId);
+  })
+
+  function showReportModal(productId) {
+    document.getElementById("reportModal").classList.remove("hidden");
+    document.getElementById("reportObjectId").value = productId;
+  }
+
+  function closeReportModal() {
+    document.getElementById("reportModal").classList.add("hidden");
+  }
+
+  document.getElementById("reportForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const formData = new FormData(form);
+
+    fetch("{% url 'report:create_report' %}", {
+      method: "POST",
+      headers: {
+        "X-Requested-With": "XMLHttpRequest"
+      },
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert("Laporan berhasil dikirim!");
+        form.reset();
+        closeReportModal();
+      } else {
+        alert("Gagal mengirim laporan: " + (data.message || JSON.stringify(data.errors)));
+      }
+    })
+    .catch(error => {
+      console.error("Error:", error);
+      alert("Terjadi kesalahan saat mengirim laporan.");
+    });
+  });
+
+  function showEditReportModal(reportId, title, description) {
+    document.getElementById("editReportModal").classList.remove("hidden");
+    document.getElementById("editReportId").value = reportId;
+    document.getElementById("editReportTitle").value = title;
+    document.getElementById("editReportDescription").value = description;
+  }
+
+  function closeEditReportModal() {
+    document.getElementById("editReportModal").classList.add("hidden");
+  }
+
+
+
+  // === SHOW DELETE REPORT MODAL ===
+  function showDeleteReportModal(reportId) {
+    const modal = document.getElementById('deleteReportModal');
+    const hiddenInput = document.getElementById('reportIdDelete');
+    const deleteButton = document.getElementById('deleteReportButton');
+
+    // Simpan id ke input hidden
+    hiddenInput.value = reportId;
+
+    // Tampilkan modal
+    modal.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden'); // mencegah background scroll
+  }
+
+  // === HIDE DELETE REPORT MODAL ===
+  function hideDeleteReportModal() {
+    const modal = document.getElementById('deleteReportModal');
+    modal.classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+  }
+
+  // === DELETE REPORT ACTION ===
+  document.getElementById('deleteReportButton').addEventListener('click', async () => {
+    const reportId = document.getElementById('reportIdDelete').value;
+
+    try {
+      const response = await fetch(`/report/delete/${reportId}/`, {
+        method: 'POST', // ubah ke POST, karena Django DELETE sering diblok CSRF
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('Report deleted successfully!');
+        hideDeleteReportModal();
+
+        // Hapus elemen dari DOM tanpa reload
+        const reportRow = document.getElementById(`report-${reportId}`);
+        if (reportRow) reportRow.remove();
+        
+        const remainingReports = document.querySelectorAll('[id^="report-"]').length;
+        if (remainingReports === 0) {
+          const emptyMsg = document.createElement('p');
+          emptyMsg.textContent = "Belum ada report.";
+          emptyMsg.classList.add('text-center', 'text-gray-500', 'mt-4');
+          document.getElementById('reportContainer').appendChild(emptyMsg);
+        }
+
+      } else {
+        alert(data.error || 'Failed to delete report.');
+      }
+    } catch (error) {
+      console.error('Error deleting report:', error);
+      alert('An unexpected error occurred.');
+    }
+  });
+
+  // === CLOSE MODAL KETIKA KLIK DI LUAR ===
+  window.addEventListener('click', (e) => {
+    const modal = document.getElementById('deleteReportModal');
+    const content = document.getElementById('deleteReportModalContent');
+    if (e.target === modal) {
+      hideDeleteReportModal();
+    }
+  });
+
+  window.addEventListener('click', (e) => {
+    const modal = document.getElementById('editReportModal');
+    if (e.target === modal) {
+      closeEditReportModal();
+    }
+  });
+
+  document.getElementById("editReportForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const formData = new FormData(form);
+    const reportId = document.getElementById("editReportId").value;
+
+    fetch(`/report/edit/${reportId}/`, {
+      method: "POST",
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        "X-CSRFToken": form.querySelector("[name=csrfmiddlewaretoken]").value
+      },
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert("Report updated successfully!");
+        closeEditReportModal();
+        location.reload(); // reload biar tampilannya update
+      } else {
+        alert("Failed to update report: " + (data.message || JSON.stringify(data.errors)));
+      }
+    })
+    .catch(error => {
+      console.error("Error:", error);
+      alert("An error occurred while updating the report.");
+    });
   });
 </script>
