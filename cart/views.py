@@ -62,7 +62,7 @@ def show_checkout(request):
                 cart_items.append({
                     'product': product,
                     'quantity': quantity,
-                    'price_at_checkout': product.price,  # simpan harga saat checkout
+                    'price_at_checkout': product.price, 
                 })
             except Product.DoesNotExist:
                 continue
