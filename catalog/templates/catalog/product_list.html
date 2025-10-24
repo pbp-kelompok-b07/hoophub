@@ -1,5 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block meta %}
+    <title>hoophub - Catalog</title>
+{% endblock meta %}
 
 {% block content %}
 {% include 'navbar.html' %}
@@ -24,10 +27,10 @@
         </svg>
         Home
       </a>
-      <h1 class="text-3xl font-bold text-[#005C67]">HoopHub Catalog</h1>
+      <h1 class="text-3xl font-bold text-[#005C67]">hoophub Catalog</h1>
     </div>
 
-    {% if user.is_staff %}
+    {% if user.username == "Admin" or user.username == "admin" %}
       <button id="openAddModal"
               class="bg-[#EE9B00] text-white font-semibold px-4 py-2 rounded-lg hover:bg-[#d98f00] transition">
         + Add Product
@@ -50,9 +53,9 @@
       <p class="text-sm {{ p.is_available|yesno:'text-green-600,text-red-600' }}">
         {% if p.is_available %}Available{% else %}Out of Product{% endif %}
       </p>
-      <p class="text-xs text-gray-400 mb-4">Dirilis: {{ p.release_date }}</p>
+      <p class="text-xs text-gray-400 mb-4">Released: {{ p.release_date }}</p>
 
-      {% if user.is_staff %}
+      {% if user.username == "Admin" or user.username == "admin" %}
         <div class="mt-auto flex justify-between">
           <button
             class="editBtn bg-[#005C67] text-white rounded-lg px-3 py-1 hover:bg-[#007681]"
@@ -99,11 +102,11 @@
       {% endif %}
       </div>
   {% empty %}
-    <p class="text-center text-gray-500 col-span-3">Tidak ada produk ditemukan.</p>
+    <p class="text-center text-gray-500 col-span-3">No products yet.</p>
   {% endfor %}
 </div>
 
-{% if user.is_staff %}
+{% if user.username == "Admin" or user.username == "admin" %}
 <!-- Modal Tambah / Edit Product (ADMIN ONLY) -->
 <div id="productModal"
      class="fixed inset-0 bg-black bg-opacity-40 hidden flex justify-center items-center z-50 transition-all">

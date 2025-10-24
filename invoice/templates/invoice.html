@@ -170,11 +170,11 @@
                             </div>
 
                             <div style="font-size:0.9rem;color:#444;line-height:1.5;">
-                              Qty: <b>{{ oi.quantity }}</b>
+                              Quantity: <b>{{ oi.quantity }}</b>
                             </div>
 
                             <div style="font-size:0.9rem;color:#444;line-height:1.5;">
-                              Harga Satuan:
+                              Price:
                               <b>
                                 Rp{{ oi.price_at_checkout|localize }}
                               </b>
@@ -664,7 +664,7 @@ function openInvoiceModal(invoiceId) {
       } else {
         if (errBox) {
           errBox.style.display = "block";
-          errBox.textContent = data.message || "Gagal update status.";
+          errBox.textContent = data.message || "Fail to update status";
         }
       }
     })

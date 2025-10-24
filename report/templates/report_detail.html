@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block meta %}
-<title>hoophub</title>
+<title>hoophub - Report Detail</title>
 {% endblock meta %}
 
 {% block content %}
@@ -65,7 +65,7 @@
     </div>
   </div>
 
-  {% if user.is_staff %}
+  {% if user.username == "Admin" or user.username == "admin" %}
   <!-- Admin can change report status -->
   <form method="POST" class="mt-6">
     {% csrf_token %}

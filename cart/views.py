@@ -9,7 +9,6 @@ from invoice.models import Invoice
 from cart.models import Order, OrderItem
 import datetime
 
-
 def show_cart(request):
     cart_data = request.session.get('cart', {})
     
@@ -43,7 +42,7 @@ def show_cart(request):
     return render(request, 'cart.html', context)
 
 
-@login_required 
+@login_required(login_url="authentication:login")
 def show_checkout(request):
     if request.method == 'POST':
         cart_data = request.session.get('cart', {})
@@ -137,8 +136,7 @@ def show_checkout(request):
     else:
         return redirect('cart:show_cart')
 
-
-@login_required
+@login_required(login_url="authentication:login")
 @require_POST
 def remove_from_cart(request, id):
     cart = request.session.get('cart', {})
@@ -149,8 +147,7 @@ def remove_from_cart(request, id):
         request.session.modified = True
     return HttpResponseRedirect(reverse('cart:show_cart'))
 
-
-@login_required
+@login_required(login_url="authentication:login")
 @require_POST
 def add_to_cart(request, product_id):
     cart = request.session.get('cart', {})

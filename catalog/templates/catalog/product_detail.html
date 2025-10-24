@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block meta %}
+    <title>hoophub - Product Details</title>
 <style>
   .review-container {
         display: flex;
@@ -149,7 +150,7 @@
       </div>
 
       <!-- hanya user yang sudah login yang bisa lihat button review, dan admin/user belum login tidak bisa lihat buttonnya -->
-      {% if user.is_authenticated and 'admin' not in request.user.username.lower %}
+      {% if user.is_authenticated and request.user.username.lower != 'admin' %}
         <div>
           <div class="review-action-group">
             <button type="button" class="mb-6 px-4 py-2 bg-[#EE9B00] text-white font-semibold rounded-lg hover:bg-[#CA6702] transition" onclick="showCreateReviewModal({{ p.id }})" id="review-btn-{{ p.id }}">
@@ -175,6 +176,10 @@
       <div class="prose max-w-none text-gray-700 leading-relaxed">
         {{ p.description|linebreaksbr|default:"No description." }}
       </div>
+
+      <h2 class="text-xl font-semibold text-[#0f5257] mb-3 mt-6">Reviews</h2>
+      <div id="review-container" class="flex flex-col gap-5"></div>
+
       <div class="flex items-center justify-between border-t pt-4 mt-14">
         <p class="text-gray-600 text-xs">Something wrong with this product?</p>
         <button 

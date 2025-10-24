@@ -9,7 +9,7 @@ from catalog.models import Product
 # Create your views here.
 def show_review(request):
     if request.user.is_authenticated:
-        if 'admin' in request.user.username.lower():
+        if request.user.username.lower() == 'admin':
             review = Review.objects.all()
         else:
             review = Review.objects.filter(user=request.user)
@@ -22,7 +22,7 @@ def show_review(request):
 
 @login_required(login_url="authentication:login")
 def show_json(request):
-    if 'admin' in request.user.username.lower():
+    if request.user.username.lower() == 'admin':
         reviews = Review.objects.all()
     else:
         reviews = Review.objects.filter(user=request.user)
@@ -45,13 +45,13 @@ def show_json(request):
 @login_required(login_url="authentication:login")
 def show_json_by_id(request, review_id):
     try:
-        if 'admin' in request.user.username.lower():
+        if request.user.username.lower() == 'admin':
             review = Review.objects.get(pk=review_id)
         else:
             review = Review.objects.filter(user=request.user).get(pk=review_id)
         data = {
             'id': str(review.id),
-            'date': review.date.strftime("%d %B %Y, %H:%M"),
+            'date': review.date.strftime("%d %B %Y"),
             'review': review.review,
             'rating': review.rating,
             'product': {
@@ -86,7 +86,7 @@ def create_review(request, id):
 @require_POST
 @login_required(login_url="authentication:login")
 def edit_review(request, review_id):
-    if 'admin' in request.user.username.lower():
+    if request.user.username.lower() == 'admin':
         review = get_object_or_404(Review, pk=review_id)
     else:
         review = get_object_or_404(Review, pk=review_id, user=request.user)
@@ -102,7 +102,7 @@ def edit_review(request, review_id):
 @login_required(login_url="authentication:login")
 def delete_review(request, review_id):
     try:
-        if 'admin' in request.user.username.lower():
+        if request.user.username.lower() == 'admin':
             review = get_object_or_404(Review, pk=review_id)
         else:
             review = get_object_or_404(Review, pk=review_id, user=request.user)
