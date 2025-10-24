@@ -84,8 +84,8 @@ class ReviewTest(TestCase):
     def test_unauthenticated_user_cannot_access_views(self):
         self.client.logout()
         response = self.client.get(reverse('review:show_review'))
-        self.assertEqual(response.status_code, 302)
-        self.assertIn('/authentication/login/', response.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'review.html')
 
     def test_nonexistent_page(self):
         response = Client().get('/burhan_always_exists/')

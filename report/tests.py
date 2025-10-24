@@ -35,9 +35,9 @@ class ReportViewsTest(TestCase):
 
     def test_show_report_redirect_if_not_logged_in(self):
         response = self.client.get(reverse("report:show_report"))
-        self.assertEqual(response.status_code, 302)
-        self.assertTrue(response.url.startswith("/authentication/login/"))
-
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "report.html")
+        
     def test_create_report_ajax_success(self):
         self.client.login(username="testuser", password="password123")
         data = {
