@@ -118,10 +118,6 @@ def show_checkout(request):
 @login_required
 @require_POST
 def remove_from_cart(request, id):
-    """
-    Menghapus item dari keranjang (session) dan me-redirect
-    kembali ke halaman keranjang.
-    """
     cart = request.session.get('cart', {})
     
     product_id_str = str(id) 
