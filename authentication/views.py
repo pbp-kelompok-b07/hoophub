@@ -1,174 +1,45 @@
+from django.shortcuts import render
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib import messages
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
-import json
+from django.urls import reverse
 
-
-@csrf_exempt
+# Create your views here.
 def register(request):
-    if request.method != "POST":
-        return JsonResponse(
-            {"status": False, "message": "Invalid request method."},
-            status=405,
-        )
+    if request.method == "GET":
+        form = UserCreationForm()
+        context = {'form': form}
+        return render(request, 'register.html', context)
 
-    try:
-        data = json.loads(request.body.decode("utf-8"))
-    except json.JSONDecodeError:
-        return JsonResponse(
-            {"status": False, "message": "Invalid JSON body."},
-            status=400,
-        )
+    elif request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'success': True, 'message': 'Account created successfully!'})
+        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+    return JsonResponse({'success': False, 'message': 'Invalid request'}, status=405)
 
-    username = (data.get("username") or "").strip()
-    password1 = data.get("password1") or ""
-    password2 = data.get("password2") or ""
-
-    # validasi basic
-    if not username or not password1 or not password2:
-        return JsonResponse(
-            {"status": False, "message": "Semua field wajib diisi."},
-            status=400,
-        )
-
-    if password1 != password2:
-        return JsonResponse(
-            {"status": False, "message": "Password dan konfirmasi tidak cocok."},
-            status=400,
-        )
-
-    if len(password1) < 8:
-        return JsonResponse(
-            {"status": False, "message": "Password minimal 8 karakter."},
-            status=400,
-        )
-
-    if User.objects.filter(username=username).exists():
-        return JsonResponse(
-            {"status": False, "message": "Username sudah digunakan."},
-            status=400,
-        )
-
-    user = User.objects.create_user(username=username, password=password1)
-    user.save()
-
-    return JsonResponse(
-        {
-            "status": "success",           
-            "message": "User created successfully!",
-            "username": user.username,
-        },
-        status=200,
-    )
-
-
-@csrf_exempt
 def login_user(request):
-    if request.method != "POST":
-        return JsonResponse(
-            {"status": False, "message": "Invalid request method."},
-            status=405,
-        )
+    next_url = request.POST.get('next') or reverse('main:show_main')
+    if request.method == "GET":
+        form = AuthenticationForm()
+        context = {'form': form, 'next_url': next_url}
+        return render(request, 'login.html', context)
+    
+    elif request.method == 'POST':
+        form = AuthenticationForm(data=request.POST)
 
-    if request.content_type == "application/json":
-        try:
-            data = json.loads(request.body.decode("utf-8"))
-        except json.JSONDecodeError:
-            return JsonResponse(
-                {"status": False, "message": "Invalid JSON body."},
-                status=400,
-            )
-        username = (data.get("username") or "").strip()
-        password = data.get("password") or ""
-    else:
-        username = (request.POST.get("username") or "").strip()
-        password = request.POST.get("password") or ""
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            response = JsonResponse({'success': True, 'message': 'Login successful!', 'next_url': next_url})
+            return response
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors})
+    return JsonResponse({'success': False, 'message': 'Invalid request'}, status=405)
 
-    user = authenticate(request, username=username, password=password)
-
-    if user is None:
-        return JsonResponse(
-            {"status": False, "message": "Username atau password salah."},
-            status=401,
-        )
-
-    login(request, user)
-    return JsonResponse(
-        {
-            "status": True,
-            "message": "Login berhasil.",
-            "username": user.username,
-        },
-        status=200,
-    )
-
-
-@csrf_exempt
 def logout_user(request):
-    if request.method != "POST":
-        return JsonResponse(
-            {"status": False, "message": "Invalid request method."},
-            status=405,
-        )
-
     logout(request)
-    return JsonResponse(
-        {"status": True, "message": "Logout berhasil."},
-        status=200,
-    )
-@csrf_exempt
-def register_api(request):
-    if request.method != "POST":
-        return JsonResponse(
-            {"status": False, "message": "Invalid request method."},
-            status=405,
-        )
-
-    try:
-        data = json.loads(request.body.decode("utf-8"))
-    except json.JSONDecodeError:
-        return JsonResponse(
-            {"status": False, "message": "Invalid JSON body."},
-            status=400,
-        )
-
-    username = (data.get("username") or "").strip()
-    password1 = data.get("password1") or ""
-    password2 = data.get("password2") or ""
-
-    if not username or not password1 or not password2:
-        return JsonResponse(
-            {"status": False, "message": "Semua field wajib diisi."},
-            status=400,
-        )
-
-    if password1 != password2:
-        return JsonResponse(
-            {"status": False, "message": "Password dan konfirmasi tidak cocok."},
-            status=400,
-        )
-
-    if len(password1) < 8:
-        return JsonResponse(
-            {"status": False, "message": "Password minimal 8 karakter."},
-            status=400,
-        )
-
-    if User.objects.filter(username=username).exists():
-        return JsonResponse(
-            {"status": False, "message": "Username sudah digunakan."},
-            status=400,
-        )
-
-    user = User.objects.create_user(username=username, password=password1)
-    user.save()
-
-    return JsonResponse(
-        {
-            "status": "success",      # <- ini yang dicek di Flutter
-            "message": "User created successfully!",
-            "username": user.username,
-        },
-        status=200,
-    )
+    response = JsonResponse({'success': True, 'message': 'Logged out successfully!'})
+    return response

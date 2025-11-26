@@ -28,5 +28,5 @@ urlpatterns = [
     path('report/', include('report.urls')),
     path('review/', include('review.urls')),
     path('wishlist/', include('wishlist.urls')),
-    path("auth/", include("authentication.urls")),
+    path('auth/', include('authentication.urls')),
 ]
