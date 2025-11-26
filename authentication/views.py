@@ -55,7 +55,7 @@ def register(request):
 
     return JsonResponse(
         {
-            "status": "success",           # <- ini yang dicek di Flutter
+            "status": "success",           
             "message": "User created successfully!",
             "username": user.username,
         },
@@ -71,7 +71,6 @@ def login_user(request):
             status=405,
         )
 
-    # Bisa dari JSON (Flutter postJson) atau form data (CookieRequest.login)
     if request.content_type == "application/json":
         try:
             data = json.loads(request.body.decode("utf-8"))
@@ -83,7 +82,6 @@ def login_user(request):
         username = (data.get("username") or "").strip()
         password = data.get("password") or ""
     else:
-        # kasus CookieRequest.login() -> kirim form-encoded
         username = (request.POST.get("username") or "").strip()
         password = request.POST.get("password") or ""
 
@@ -117,5 +115,60 @@ def logout_user(request):
     logout(request)
     return JsonResponse(
         {"status": True, "message": "Logout berhasil."},
+        status=200,
+    )
+@csrf_exempt
+def register_api(request):
+    if request.method != "POST":
+        return JsonResponse(
+            {"status": False, "message": "Invalid request method."},
+            status=405,
+        )
+
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+    except json.JSONDecodeError:
+        return JsonResponse(
+            {"status": False, "message": "Invalid JSON body."},
+            status=400,
+        )
+
+    username = (data.get("username") or "").strip()
+    password1 = data.get("password1") or ""
+    password2 = data.get("password2") or ""
+
+    if not username or not password1 or not password2:
+        return JsonResponse(
+            {"status": False, "message": "Semua field wajib diisi."},
+            status=400,
+        )
+
+    if password1 != password2:
+        return JsonResponse(
+            {"status": False, "message": "Password dan konfirmasi tidak cocok."},
+            status=400,
+        )
+
+    if len(password1) < 8:
+        return JsonResponse(
+            {"status": False, "message": "Password minimal 8 karakter."},
+            status=400,
+        )
+
+    if User.objects.filter(username=username).exists():
+        return JsonResponse(
+            {"status": False, "message": "Username sudah digunakan."},
+            status=400,
+        )
+
+    user = User.objects.create_user(username=username, password=password1)
+    user.save()
+
+    return JsonResponse(
+        {
+            "status": "success",      # <- ini yang dicek di Flutter
+            "message": "User created successfully!",
+            "username": user.username,
+        },
         status=200,
     )
