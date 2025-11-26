@@ -34,9 +34,7 @@ DEBUG = True
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "roselia-evanny-hoophub.pbp.cs.ui.ac.id", "10.0.2.2"]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://roselia-evanny-hoophub.pbp.cs.ui.ac.id",
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
+    "https://roselia-evanny-hoophub.pbp.cs.ui.ac.id"
 ]
 
 # Application definition
