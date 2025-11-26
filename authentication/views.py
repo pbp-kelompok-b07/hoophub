@@ -71,16 +71,21 @@ def login_user(request):
             status=405,
         )
 
-    try:
-        data = json.loads(request.body.decode("utf-8"))
-    except json.JSONDecodeError:
-        return JsonResponse(
-            {"status": False, "message": "Invalid JSON body."},
-            status=400,
-        )
-
-    username = (data.get("username") or "").strip()
-    password = data.get("password") or ""
+    # Bisa dari JSON (Flutter postJson) atau form data (CookieRequest.login)
+    if request.content_type == "application/json":
+        try:
+            data = json.loads(request.body.decode("utf-8"))
+        except json.JSONDecodeError:
+            return JsonResponse(
+                {"status": False, "message": "Invalid JSON body."},
+                status=400,
+            )
+        username = (data.get("username") or "").strip()
+        password = data.get("password") or ""
+    else:
+        # kasus CookieRequest.login() -> kirim form-encoded
+        username = (request.POST.get("username") or "").strip()
+        password = request.POST.get("password") or ""
 
     user = authenticate(request, username=username, password=password)
 
