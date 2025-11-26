@@ -21,12 +21,15 @@ def show_review(request):
     else :
         return render(request, "review.html")
 
-@login_required(login_url="authentication:login")
+# @login_required(login_url="authentication:login")
 def show_json(request):
-    if request.user.username.lower() == 'admin':
+    if request.user.is_authenticated:
+        if request.user.username.lower() == 'admin':
+            reviews = Review.objects.all()
+        elif request.user.username.lower() != 'admin':
+            reviews = Review.objects.filter(user=request.user)
+    else: # jgn lupa ubah lagi karena ini ngetes di lokal doang dan karena belum ada login
         reviews = Review.objects.all()
-    else:
-        reviews = Review.objects.filter(user=request.user)
     data = [
         {
             'id': str(review.id),
