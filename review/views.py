@@ -134,13 +134,13 @@ def proxy_image(request):
     
 @csrf_exempt
 def show_json_flutter(request):
-    # if not request.user.is_authenticated:
-    #     return JsonResponse({"status": "error", "message": "Must be logged in"}, status=401)
+    if not request.user.is_authenticated:
+        return JsonResponse({"status": "error", "message": "Must be logged in"}, status=401)
     
-    # if 'admin' in request.user.username.lower():
-    reviews = Review.objects.all()
-    # else:
-        # reviews = Review.objects.filter(user=request.user)
+    if 'admin' in request.user.username.lower():
+        reviews = Review.objects.all()
+    else:
+        reviews = Review.objects.filter(user=request.user)
     data = [
         {
             'id': str(review.id),
@@ -195,10 +195,10 @@ def create_review_flutter(request, id):
 def edit_review_flutter(request, review_id):
     if request.method == 'POST':
         try:
-            # if request.user.username.lower() == 'admin':
-            review = Review.objects.get(pk=review_id)
-            # else:
-                # review = Review.objects.get(pk=review_id, user=request.user)
+            if request.user.username.lower() == 'admin':
+                review = Review.objects.get(pk=review_id)
+            else:
+                review = Review.objects.get(pk=review_id, user=request.user)
             
             data = json.loads(request.body)
 
@@ -228,10 +228,10 @@ def edit_review_flutter(request, review_id):
 def delete_review_flutter(request, review_id):
     if request.method == 'POST':
         try:
-            # if request.user.username.lower() == 'admin':
-            review = Review.objects.get(pk=review_id)
-            # else:
-                #  = Review.objects.get(pk=review_id, user=request.user)
+            if request.user.username.lower() == 'admin':
+                review = Review.objects.get(pk=review_id)
+            else:
+                review = Review.objects.get(pk=review_id, user=request.user)
             
             review.delete()
             return JsonResponse({"status": "success", "message": "Review successfully deleted"}, status=200)
