@@ -5,7 +5,9 @@ from django.views.decorators.http import require_POST
 from review.models import Review
 from review.forms import ReviewForm
 from catalog.models import Product
+from django.views.decorators.csrf import csrf_exempt
 import requests
+import json
 
 # Create your views here.
 def show_review(request):
@@ -21,15 +23,12 @@ def show_review(request):
     else :
         return render(request, "review.html")
 
-# @login_required(login_url="authentication:login")
+@login_required(login_url="authentication:login")
 def show_json(request):
-    if request.user.is_authenticated:
-        if request.user.username.lower() == 'admin':
-            reviews = Review.objects.all()
-        elif request.user.username.lower() != 'admin':
-            reviews = Review.objects.filter(user=request.user)
-    else: # jgn lupa ubah lagi karena ini ngetes di lokal doang dan karena belum ada login
+    if 'admin' in request.user.username.lower():
         reviews = Review.objects.all()
+    else:
+        reviews = Review.objects.filter(user=request.user)
     data = [
         {
             'id': str(review.id),
@@ -132,3 +131,112 @@ def proxy_image(request):
         )
     except requests.RequestException as e:
         return HttpResponse(f'Error fetching image: {str(e)}', status=500)
+    
+@csrf_exempt
+def show_json_flutter(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"status": "error", "message": "Must be logged in"}, status=401)
+    
+    if 'admin' in request.user.username.lower():
+        reviews = Review.objects.all()
+    else:
+        reviews = Review.objects.filter(user=request.user)
+    data = [
+        {
+            'id': str(review.id),
+            'date': review.date.strftime("%d %B %Y"),
+            'review': review.review,
+            'rating': review.rating,
+            'product': {
+                'name': review.product.name,
+                'price': review.product.price,
+                'image': review.product.image
+            }
+        }
+        for review in reviews
+    ]
+    return JsonResponse(data, safe=False)
+
+@csrf_exempt
+def create_review_flutter(request, id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            product = Product.objects.get(pk=id)
+            user = request.user
+
+            review_text = data.get("review", "")
+            rating_val = data.get("rating", 0)
+
+            try:
+                rating = int(rating_val)
+            except ValueError:
+                return JsonResponse({"status": "error", "message": "Rating must be a valid number"}, status=400)
+            
+            if rating < 1 or rating > 5:
+                return JsonResponse({"status": "error", "message": "Rating must be between 1 and 5"}, status=400)
+            
+            new_review = Review(
+                user=user,
+                product=product,
+                review=review_text,
+                rating=rating,
+            )
+            new_review.save()
+
+            return JsonResponse({"status": "success", "message": "Review successfully added"}, status=200)
+        except Product.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "Product not found"}, status=404)
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=500)
+    return JsonResponse({"status": "error", "message": "Method not allowed"}, status=401)
+
+@csrf_exempt
+def edit_review_flutter(request, review_id):
+    if request.method == 'POST':
+        try:
+            if request.user.username.lower() == 'admin':
+                review = Review.objects.get(pk=review_id)
+            else:
+                review = Review.objects.get(pk=review_id, user=request.user)
+            
+            data = json.loads(request.body)
+
+            review_text = data.get("review", "")
+            rating_val = data.get("rating", review.rating)
+            
+            try:
+                rating = int(rating_val)
+            except ValueError:
+                return JsonResponse({"status": "error", "message": "Rating must be a valid number"}, status=400)
+
+            if rating < 1 or rating > 5:
+                return JsonResponse({"status": "error", "message": "Rating must be between 1 and 5"}, status=400)
+            
+            review.review = review_text
+            review.rating = rating
+            review.save()
+            
+            return JsonResponse({"status": "success", "message": "Review successfully updated"}, status=200)
+        except Review.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "Review not found"}, status=404)
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=500)
+    return JsonResponse({"status": "error", "message": "Method not allowed"}, status=401)
+    
+@csrf_exempt
+def delete_review_flutter(request, review_id):
+    if request.method == 'POST':
+        try:
+            if request.user.username.lower() == 'admin':
+                review = Review.objects.get(pk=review_id)
+            else:
+                review = Review.objects.get(pk=review_id, user=request.user)
+            
+            review.delete()
+            return JsonResponse({"status": "success", "message": "Review successfully deleted"}, status=200)
+        except Review.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "Review not found"}, status=404)
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=500)
+    return JsonResponse({"status": "error", "message": "Method not allowed"}, status=401)

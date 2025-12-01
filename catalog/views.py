@@ -111,3 +111,36 @@ def get_reviews(request, pk):
         for review in reviews
     ]
     return JsonResponse(data, safe=False)
+
+def products_filtered_json(request):
+    query = request.GET.get('q')
+    category = request.GET.get('category')
+    brand = request.GET.get('brand')
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+
+    products = Product.objects.filter(is_available=True)
+
+    if query:
+        products = products.filter(name__icontains=query)
+    if category:
+        products = products.filter(category=category)
+    if brand:
+        products = products.filter(brand__icontains=brand)
+    if min_price:
+        products = products.filter(price__gte=min_price)
+    if max_price:
+        products = products.filter(price__lte=max_price)
+
+    data = list(products.values(
+        "id",
+        "name",
+        "brand",
+        "category",
+        "price",
+        "release_date",
+        "is_available",
+        "image",
+        "description",
+    ))
+    return JsonResponse(data, safe=False)
