@@ -38,6 +38,94 @@
     {% endif %}
   </div>
 
+  <form method="get" class="mb-6 bg-white rounded-2xl shadow-md p-4 md:p-5">
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+      <div>
+        <label for="q" class="block text-sm font-semibold text-[#005C67] mb-1">Search</label>
+        <input
+          type="text"
+          id="q"
+          name="q"
+          value="{{ request.GET.q }}"
+          placeholder="Search product name"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#005C67]"
+        >
+      </div>
+
+      <div>
+        <label for="category" class="block text-sm font-semibold text-[#005C67] mb-1">Category</label>
+        <select
+          id="category"
+          name="category"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#005C67]"
+        >
+          <option value="">All</option>
+          <option value="Shoes" {% if request.GET.category == "Shoes" %}selected{% endif %}>Shoes</option>
+          <option value="Jersey" {% if request.GET.category == "Jersey" %}selected{% endif %}>Jersey</option>
+          <option value="Ball" {% if request.GET.category == "Ball" %}selected{% endif %}>Ball</option>
+          <option value="Pants" {% if request.GET.category == "Pants" %}selected{% endif %}>Pants</option>
+          <option value="Accessories" {% if request.GET.category == "Accessories" %}selected{% endif %}>Accessories</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="brand" class="block text-sm font-semibold text-[#005C67] mb-1">Brand</label>
+        <select
+          id="brand"
+          name="brand"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#005C67]"
+        >
+          <option value="">All</option>
+          <option value="Nike" {% if request.GET.brand == "Nike" %}selected{% endif %}>Nike</option>
+          <option value="Adidas" {% if request.GET.brand == "Adidas" %}selected{% endif %}>Adidas</option>
+          <option value="Spalding" {% if request.GET.brand == "Spalding" %}selected{% endif %}>Spalding</option>
+          <option value="Wilson" {% if request.GET.brand == "Wilson" %}selected{% endif %}>Wilson</option>
+          <option value="TARMAK" {% if request.GET.brand == "TARMAK" %}selected{% endif %}>TARMAK</option>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label for="min_price" class="block text-sm font-semibold text-[#005C67] mb-1">Min Price</label>
+          <input
+            type="number"
+            id="min_price"
+            name="min_price"
+            value="{{ request.GET.min_price }}"
+            min="0"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#005C67]"
+          >
+        </div>
+        <div>
+          <label for="max_price" class="block text-sm font-semibold text-[#005C67] mb-1">Max Price</label>
+          <input
+            type="number"
+            id="max_price"
+            name="max_price"
+            value="{{ request.GET.max_price }}"
+            min="0"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#005C67]"
+          >
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <button
+          type="submit"
+          class="w-full bg-[#005C67] text-white font-semibold rounded-lg px-3 py-2 text-sm hover:bg-[#007681] transition"
+        >
+          Apply
+        </button>
+        <a
+          href="{% url 'catalog:product_list' %}"
+          class="w-full text-center border border-gray-300 text-[#005C67] font-semibold rounded-lg px-3 py-2 text-sm hover:bg-gray-50 transition"
+        >
+          Reset
+        </a>
+      </div>
+    </div>
+  </form>
+
   <!-- Product Grid -->
   <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
   {% for p in products %}
@@ -172,7 +260,6 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  // --- Helpers ---
   const getCookie = (name) => {
     const v = `; ${document.cookie}`;
     const p = v.split(`; ${name}=`);
@@ -192,7 +279,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const cancelDelete = document.getElementById("cancelDelete");
   let deleteId = null;
 
-  // Animasi modal
   const showModal = (modal, card) => {
     modal.classList.remove("hidden");
     setTimeout(() => card.classList.replace("scale-95", "scale-100"), 20);
@@ -204,7 +290,6 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => modal.classList.add("hidden"), 200);
   };
 
-  // Add Product
   if (openAddModal) {
     openAddModal.addEventListener("click", () => {
       modalTitle.textContent = "Add Product";
@@ -217,7 +302,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (closeModal)
     closeModal.addEventListener("click", () => hideModal(productModal, modalCard));
 
-  // Edit Product
   document.querySelectorAll(".editBtn").forEach(btn => {
     btn.addEventListener("click", () => {
       modalTitle.textContent = "Edit Product";
@@ -233,7 +317,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Delete Product
   document.querySelectorAll(".deleteBtn").forEach(btn => {
     btn.addEventListener("click", () => {
       deleteId = btn.dataset.id;
@@ -261,7 +344,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Submit Add/Edit
   if (productForm) {
     productForm.addEventListener("submit", async (e) => {
       e.preventDefault();
