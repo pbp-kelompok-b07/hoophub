@@ -127,3 +127,27 @@ def logout_flutter(request):
             "status": False,
             "message": "Logout failed."
         }, status=401)
+@csrf_exempt
+def login_flutter(request):
+    username = request.POST['username']
+    password = request.POST['password']
+    user = authenticate(username=username, password=password)
+    if user is not None:
+        if user.is_active:
+            login(request, user)
+            return JsonResponse({
+                "username": user.username,
+                "status": True,
+                "message": "Login successful!",
+                "is_admin": user.is_superuser or user.is_staff,
+            }, status=200)
+        else:
+            return JsonResponse({
+                "status": False,
+                "message": "Login failed, account is disabled."
+            }, status=401)
+    else:
+        return JsonResponse({
+            "status": False,
+            "message": "Login failed, please check your username or password."
+        }, status=401)
