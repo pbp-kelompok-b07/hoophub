@@ -165,6 +165,7 @@ def show_json_all_flutter(request):
     data = [
         {
             'id': str(review.id),
+            'user': review.user.username,
             'date': review.date.strftime("%d %B %Y"),
             'review': review.review,
             'rating': review.rating,
