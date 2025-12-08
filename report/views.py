@@ -196,3 +196,28 @@ def proxy_image(request):
         )
     except requests.RequestException as e:
         return HttpResponse(f'Error fetching image: {str(e)}', status=500)
+        
+@csrf_exempt
+@login_required(login_url=LOGIN_URL)
+def create_report_flutter(request):
+    if request.method == 'POST':
+        form = ReportForm(request.POST)
+        report_type = request.POST.get('report_type')
+        object_id = request.POST.get('object_id')
+
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.reporter = request.user
+            report.report_type = report_type
+
+            if report_type == 'product':
+                report.reported_product = get_object_or_404(Product, pk=object_id)
+            elif report_type == 'review':
+                report.reported_review = get_object_or_404(Review, pk=object_id)
+            
+            report.save()
+            return JsonResponse({'success': True})
+        
+        return JsonResponse({'success': False, 'errors': form.errors})
+
+    return JsonResponse({'success': False, 'message': 'Invalid request'})
