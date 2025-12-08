@@ -157,6 +157,7 @@ def show_json_flutter(request):
     ]
     return JsonResponse(data, safe=False)
 
+@login_required
 @csrf_exempt
 def create_review_flutter(request, id):
     if request.method == 'POST':

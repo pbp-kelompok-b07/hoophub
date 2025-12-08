@@ -1,7 +1,7 @@
 from pyexpat.errors import messages
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, render, redirect
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
@@ -10,6 +10,7 @@ from report.models import Report
 from review.models import Review
 from catalog.models import Product
 from django.contrib.auth.decorators import user_passes_test
+import requests
 
 # Create your views here.
 LOGIN_URL = '/authentication/login/'
@@ -139,3 +140,59 @@ def admin_report_detail(request, report_id):
             messages.error(request, "Invalid status selected.")
 
     return render(request, 'admin_report_detail.html', {'report': report})
+
+@csrf_exempt
+def show_json_flutter(request):
+    # Optimasi query
+    reports = Report.objects.select_related("reporter", "reported_user", "reported_product")
+    data = []
+    for r in reports:
+        data.append({
+            "id": str(r.id),
+            "report_type": r.report_type,
+            "status": r.status,
+            "title": r.title,
+            "description": r.description,
+            "created_at": r.created_at.strftime("%d %B %Y"),
+            "updated_at": r.updated_at.strftime("%d %B %Y"),
+
+            # Reporter (yang membuat report)
+            "reporter": {
+                "id": r.reporter.id,
+                "username": r.reporter.username,
+            },
+
+            # User yang dilaporkan
+            "reported_user": {
+                "id": r.reported_user.id if r.reported_user else None,
+                "username": r.reported_user.username if r.reported_user else None,
+            },
+
+            # Produk yang dilaporkan
+            "reported_product": {
+                "id": r.reported_product.id if r.reported_product else None,
+                "name": r.reported_product.name if r.reported_product else None,
+                "price": r.reported_product.price if r.reported_product else None,
+                "image": r.reported_product.image if r.reported_product else None,
+            },
+        })
+
+    return JsonResponse(data, safe=False)
+
+def proxy_image(request):
+    image_url = request.GET.get('url')
+    if not image_url:
+        return HttpResponse('No URL provided', status=400)
+    
+    try:
+        # Fetch image from external source
+        response = requests.get(image_url, timeout=10)
+        response.raise_for_status()
+        
+        # Return the image with proper content type
+        return HttpResponse(
+            response.content,
+            content_type=response.headers.get('Content-Type', 'image/jpeg')
+        )
+    except requests.RequestException as e:
+        return HttpResponse(f'Error fetching image: {str(e)}', status=500)
