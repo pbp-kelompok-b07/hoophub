@@ -144,10 +144,33 @@ def show_json_flutter(request):
     data = [
         {
             'id': str(review.id),
+            'user': review.user.username,
             'date': review.date.strftime("%d %B %Y"),
             'review': review.review,
             'rating': review.rating,
             'product': {
+                'id': review.product.id,
+                'name': review.product.name,
+                'price': review.product.price,
+                'image': review.product.image
+            }
+        }
+        for review in reviews
+    ]
+    return JsonResponse(data, safe=False)
+
+@csrf_exempt
+def show_json_all_flutter(request):
+    reviews = Review.objects.all()
+    data = [
+        {
+            'id': str(review.id),
+            'user': review.user.username,
+            'date': review.date.strftime("%d %B %Y"),
+            'review': review.review,
+            'rating': review.rating,
+            'product': {
+                'id': review.product.id,
                 'name': review.product.name,
                 'price': review.product.price,
                 'image': review.product.image
