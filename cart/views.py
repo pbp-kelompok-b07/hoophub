@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
@@ -8,6 +8,8 @@ from catalog.models import Product
 from invoice.models import Invoice
 from cart.models import Order, OrderItem
 import datetime
+from django.views.decorators.csrf import csrf_exempt
+import json
 
 def show_cart(request):
     cart_data = request.session.get('cart', {})
@@ -160,3 +162,83 @@ def add_to_cart(request, product_id):
     request.session['cart'] = cart
     request.session.modified = True
     return redirect(request.META.get('HTTP_REFERER', 'main:show_main'))
+
+@login_required
+def get_cart_json(request):
+    cart = request.session.get('cart', {})
+    data = []
+
+    for product_id, item_data in cart.items():
+        try:
+            product = Product.objects.get(id=product_id)
+            quantity = item_data.get('quantity', 1)
+            subtotal = product.price * quantity
+            
+            data.append({
+                "pk": product.id,
+                "fields": {
+                    "product_name": product.name,
+                    "price": product.price,
+                    "quantity": quantity,
+                    "subtotal": subtotal,
+                    "thumbnail_url": product.image.url if product.image else "",
+                }
+            })
+        except Product.DoesNotExist:
+            continue
+
+    return JsonResponse(data, safe=False)
+
+@csrf_exempt
+def add_to_cart_flutter(request, product_id):
+    if request.method == 'POST':
+        cart = request.session.get('cart', {})
+        product_id_str = str(product_id)
+
+        if not Product.objects.filter(id=product_id).exists():
+            return JsonResponse({"status": "error", "message": "Produk tidak ditemukan"}, status=404)
+
+        if product_id_str in cart:
+            cart[product_id_str]['quantity'] += 1
+        else:
+            cart[product_id_str] = {'quantity': 1}
+        
+        request.session['cart'] = cart
+        request.session.modified = True
+        
+        return JsonResponse({"status": "success", "message": "Berhasil ditambahkan ke keranjang"}, status=200)
+
+    return JsonResponse({"status": "error", "message": "Invalid method"}, status=401)
+
+@csrf_exempt
+def delete_cart_flutter(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        product_id = str(data.get("id"))
+        
+        cart = request.session.get('cart', {})
+        
+        if product_id in cart:
+            del cart[product_id]
+            request.session['cart'] = cart
+            request.session.modified = True
+            return JsonResponse({"status": "success", "message": "Item dihapus"}, status=200)
+        
+        return JsonResponse({"status": "error", "message": "Item tidak ada di keranjang"}, status=404)
+        
+    return JsonResponse({"status": "error"}, status=401)
+
+@csrf_exempt
+def checkout_flutter(request):
+    if request.method == 'POST':
+        user = request.user
+        cart_items = Product.objects.filter(user=user)
+        
+        if not cart_items.exists():
+             return JsonResponse({"status": "error", "message": "Cart is empty"}, status=400)
+        
+        cart_items.delete()
+        
+        return JsonResponse({"status": "success", "message": "Checkout successful!"}, status=200)
+        
+    return JsonResponse({"status": "error"}, status=401)
