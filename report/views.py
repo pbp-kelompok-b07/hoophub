@@ -179,6 +179,45 @@ def show_json_flutter(request):
 
     return JsonResponse(data, safe=False)
 
+@csrf_exempt
+@login_required
+def show_my_json_flutter(request):
+    
+    if request.user.is_superuser:
+        reports = Report.objects.all()
+    else:
+        reports = Report.objects.filter(reporter=request.user)
+    
+    reports = reports.select_related("reporter", "reported_user", "reported_product")
+
+    data = []
+    for r in reports:
+        data.append({
+            "id": str(r.id),
+            "report_type": r.report_type,
+            "status": r.status,
+            "title": r.title,
+            "description": r.description,
+            "created_at": r.created_at.strftime("%d %B %Y"),
+            "updated_at": r.updated_at.strftime("%d %B %Y"),
+            "reporter": {
+                "id": r.reporter.id,
+                "username": r.reporter.username,
+            },
+            "reported_user": {
+                "id": r.reported_user.id if r.reported_user else None,
+                "username": r.reported_user.username if r.reported_user else None,
+            },
+            "reported_product": {
+                "id": r.reported_product.id if r.reported_product else None,
+                "name": r.reported_product.name if r.reported_product else None,
+                "price": r.reported_product.price if r.reported_product else None,
+                "image": r.reported_product.image.url if r.reported_product and r.reported_product.image else None,
+            },
+        })
+
+    return JsonResponse(data, safe=False)
+
 def proxy_image(request):
     image_url = request.GET.get('url')
     if not image_url:
@@ -221,3 +260,61 @@ def create_report_flutter(request):
         return JsonResponse({'success': False, 'errors': form.errors})
 
     return JsonResponse({'success': False, 'message': 'Invalid request'})
+
+from django.shortcuts import get_object_or_404
+
+@csrf_exempt
+@login_required
+def edit_report_flutter(request, id):
+    if request.method == 'POST':
+        # 1. Cari report berdasarkan ID
+        report = get_object_or_404(Report, pk=id)
+
+        # 2. Validasi Keamanan: 
+        if report.reporter != request.user and not request.user.is_superuser:
+            return JsonResponse({'status': 'error', 'message': 'Anda tidak memiliki izin mengedit report ini.'}, status=403)
+
+        # 3. Ambil data dari request
+        title = request.POST.get('title')
+        description = request.POST.get('description')
+        
+        status = request.POST.get('status') 
+
+        # 4. Validasi input tidak kosong
+        if title and description:
+            report.title = title
+            report.description = description
+            
+            if request.user.is_superuser and status:
+                report.status = status
+
+            report.save()
+
+            return JsonResponse({'status': 'success', 'message': 'Report berhasil diperbarui'})
+        
+        return JsonResponse({'status': 'error', 'message': 'Title dan Description tidak boleh kosong'}, status=400)
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
+
+@csrf_exempt
+@login_required
+def delete_report_flutter(request, id):
+    # Hanya menerima method POST agar tidak terhapus tidak sengaja lewat browser
+    if request.method == 'POST':
+        # 1. Cari report berdasarkan ID
+        report = get_object_or_404(Report, pk=id)
+
+        # 2. Validasi Keamanan:
+        # Cek apakah user adalah pemilik report ATAU user adalah admin
+        if report.reporter != request.user and not request.user.is_superuser:
+            return JsonResponse({
+                'status': 'error', 
+                'message': 'Anda tidak memiliki izin menghapus report ini.'
+            }, status=403)
+
+        # 3. Hapus data
+        report.delete()
+
+        return JsonResponse({'status': 'success', 'message': 'Report berhasil dihapus'})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)

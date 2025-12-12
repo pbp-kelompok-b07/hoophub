@@ -1,5 +1,6 @@
 from django.urls import path
-from report.views import create_report_ajax, edit_report, show_report, delete_report, report_detail, admin_report_detail, admin_report_list, show_json_flutter, proxy_image, create_report_flutter
+from report.views import create_report_ajax, edit_report, show_report, delete_report, report_detail, admin_report_detail, admin_report_list 
+from report.views import show_json_flutter, proxy_image, create_report_flutter, show_my_json_flutter, edit_report_flutter, delete_report_flutter
 
 app_name = 'report'
 
@@ -12,6 +13,9 @@ urlpatterns = [
     path('admin/reports/', admin_report_list, name='admin_report_list'),
     path('admin/reports/<uuid:report_id>/', admin_report_detail, name='admin_report_detail'),
     path('json-flutter/', show_json_flutter, name='show_json_flutter'),
+    path('my-json-flutter/', show_my_json_flutter, name='show_my_json_flutter'),
     path('create-flutter/', create_report_flutter, name='create_report_flutter'),
+    path('edit-flutter/<uuid:id>/', edit_report_flutter, name='edit_report_flutter'),
+    path('delete-flutter/<uuid:id>/', delete_report_flutter, name='delete_report_flutter'),
     path('proxy-image/', proxy_image, name='proxy_image'),
 ]
