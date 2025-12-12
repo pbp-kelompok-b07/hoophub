@@ -165,89 +165,67 @@ def add_to_cart(request, product_id):
 
 @login_required
 def get_cart_json(request):
-    cart_items = Product.objects.filter(user=request.user)
-    
+    cart = request.session.get('cart', {})
     data = []
-    
-    for item in cart_items:
-        img_url = ""
-        if item.product.image:
-            img_url = item.product.image.url
+
+    for product_id, item_data in cart.items():
+        try:
+            product = Product.objects.get(id=product_id)
+            quantity = item_data.get('quantity', 1)
+            subtotal = product.price * quantity
             
-        data.append({
-            "model": "cart.cartitem",
-            "pk": item.pk,
-            "fields": {
-                "user": item.user.id,
-                "product": item.product.id,
-                
-                "product_name": item.product.name,
-                "price": int(item.product.price),
-                "quantity": item.quantity,
-                "thumbnail_url": img_url,
-                
-                "subtotal": int(item.product.price * item.quantity)
-            }
-        })
-    
+            data.append({
+                "pk": product.id,
+                "fields": {
+                    "product_name": product.name,
+                    "price": product.price,
+                    "quantity": quantity,
+                    "subtotal": subtotal,
+                    "thumbnail_url": product.image.url if product.image else "",
+                }
+            })
+        except Product.DoesNotExist:
+            continue
+
     return JsonResponse(data, safe=False)
 
-import json
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-from catalog.models import Product
-
 @csrf_exempt
-@require_POST
 def add_to_cart_flutter(request, product_id):
     if request.method == 'POST':
-        try:
-            user = request.user
-            
-            catalog_product = Product.objects.get(pk=product_id)
-            
-            cart_item = Product.objects.filter(user=user, name=catalog_product.name).first()
+        cart = request.session.get('cart', {})
+        product_id_str = str(product_id)
 
-            if cart_item:
-                cart_item.quantity += 1
-                cart_item.save()
-                return JsonResponse({"status": "success", "message": "Jumlah produk ditambahkan"}, status=200)
-            else:
-                new_item = Product(
-                    user=user,
-                    name=catalog_product.name,
-                    price=catalog_product.price,
-                    description=catalog_product.description,
-                    quantity=1,
-                    image=catalog_product.image, 
-                    brand=catalog_product.brand,
-                    stock=catalog_product.stock 
-                )
-                new_item.save()
-                return JsonResponse({"status": "success", "message": "Produk berhasil ditambahkan ke keranjang"}, status=200)
-
-        except Product.DoesNotExist:
+        if not Product.objects.filter(id=product_id).exists():
             return JsonResponse({"status": "error", "message": "Produk tidak ditemukan"}, status=404)
-        except Exception as e:
-            return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
-    return JsonResponse({"status": "error", "message": "Invalid request"}, status=401)
+        if product_id_str in cart:
+            cart[product_id_str]['quantity'] += 1
+        else:
+            cart[product_id_str] = {'quantity': 1}
+        
+        request.session['cart'] = cart
+        request.session.modified = True
+        
+        return JsonResponse({"status": "success", "message": "Berhasil ditambahkan ke keranjang"}, status=200)
+
+    return JsonResponse({"status": "error", "message": "Invalid method"}, status=401)
 
 @csrf_exempt
 def delete_cart_flutter(request):
     if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            item_id = data.get("id")
-            
-            item = Product.objects.get(pk=item_id)
-            item.delete()
-            
-            return JsonResponse({"status": "success"}, status=200)
-        except Product.DoesNotExist:
-            return JsonResponse({"status": "error", "message": "Item not found"}, status=404)
-        except Exception as e:
-            return JsonResponse({"status": "error", "message": str(e)}, status=500)
+        data = json.loads(request.body)
+        product_id = str(data.get("id"))
+        
+        cart = request.session.get('cart', {})
+        
+        if product_id in cart:
+            del cart[product_id]
+            request.session['cart'] = cart
+            request.session.modified = True
+            return JsonResponse({"status": "success", "message": "Item dihapus"}, status=200)
+        
+        return JsonResponse({"status": "error", "message": "Item tidak ada di keranjang"}, status=404)
+        
     return JsonResponse({"status": "error"}, status=401)
 
 @csrf_exempt
