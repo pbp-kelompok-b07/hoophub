@@ -180,19 +180,27 @@ def show_json_flutter(request):
     return JsonResponse(data, safe=False)
 
 @csrf_exempt
-@login_required(login_url=LOGIN_URL)
-def show_my_json_flutter(request):
-    
-    if request.user.is_superuser:
+def show_report_json_flutter(request):
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {"status": "error", "message": "Must be logged in"},
+            status=401
+        )
+
+    # Admin / superuser lihat semua report
+    if request.user.is_superuser or 'admin' in request.user.username.lower():
         reports = Report.objects.all()
     else:
         reports = Report.objects.filter(reporter=request.user)
-    
-    reports = reports.select_related("reporter", "reported_user", "reported_product")
 
-    data = []
-    for r in reports:
-        data.append({
+    reports = reports.select_related(
+        "reporter",
+        "reported_user",
+        "reported_product"
+    )
+
+    data = [
+        {
             "id": str(r.id),
             "report_type": r.report_type,
             "status": r.status,
@@ -204,17 +212,26 @@ def show_my_json_flutter(request):
                 "id": r.reporter.id,
                 "username": r.reporter.username,
             },
-            "reported_user": {
-                "id": r.reported_user.id if r.reported_user else None,
-                "username": r.reported_user.username if r.reported_user else None,
-            },
-            "reported_product": {
-                "id": r.reported_product.id if r.reported_product else None,
-                "name": r.reported_product.name if r.reported_product else None,
-                "price": r.reported_product.price if r.reported_product else None,
-                "image": r.reported_product.image.url if r.reported_product and r.reported_product.image else None,
-            },
-        })
+            "reported_user": (
+                {
+                    "id": r.reported_user.id,
+                    "username": r.reported_user.username,
+                } if r.reported_user else None
+            ),
+            "reported_product": (
+                {
+                    "id": r.reported_product.id,
+                    "name": r.reported_product.name,
+                    "price": r.reported_product.price,
+                    "image": (
+                        r.reported_product.image.url
+                        if r.reported_product.image else None
+                    ),
+                } if r.reported_product else None
+            ),
+        }
+        for r in reports
+    ]
 
     return JsonResponse(data, safe=False)
 
