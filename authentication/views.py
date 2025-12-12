@@ -136,6 +136,9 @@ def login_flutter(request):
         if user.is_active:
             login(request, user)
             # Login status successful.
+
+            request.session.save()
+            
             return JsonResponse({
                 "username": user.username,
                 "status": True,
