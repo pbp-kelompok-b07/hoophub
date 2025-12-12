@@ -180,6 +180,7 @@ def show_json_flutter(request):
     return JsonResponse(data, safe=False)
 
 @csrf_exempt
+@login_required(login_url=LOGIN_URL)
 def show_my_json_flutter(request):
     
     if request.user.is_superuser:
