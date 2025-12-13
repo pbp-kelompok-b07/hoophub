@@ -180,26 +180,28 @@ def show_json_flutter(request):
     return JsonResponse(data, safe=False)
 
 @csrf_exempt
-def show_report_json_flutter(request):
+def show_my_json_flutter(request):
     if not request.user.is_authenticated:
         return JsonResponse(
             {"status": "error", "message": "Must be logged in"},
             status=401
         )
 
-    # Admin / superuser lihat semua report
-    if request.user.is_superuser or 'admin' in request.user.username.lower():
+    # 1. Cek status admin simpan di variabel
+    is_admin = request.user.is_superuser or 'admin' in request.user.username.lower()
+
+    # 2. Filter query
+    if is_admin:
         reports = Report.objects.all()
     else:
         reports = Report.objects.filter(reporter=request.user)
 
     reports = reports.select_related(
-        "reporter",
-        "reported_user",
-        "reported_product"
+        "reporter", "reported_user", "reported_product"
     )
 
-    data = [
+    # 3. Buat List Report
+    reports_data = [
         {
             "id": str(r.id),
             "report_type": r.report_type,
@@ -223,17 +225,19 @@ def show_report_json_flutter(request):
                     "id": r.reported_product.id,
                     "name": r.reported_product.name,
                     "price": r.reported_product.price,
-                    "image": (
-                        r.reported_product.image.url
-                        if r.reported_product.image else None
-                    ),
+                    "image": r.reported_product.image if r.reported_product.image else None
                 } if r.reported_product else None
             ),
         }
         for r in reports
     ]
 
-    return JsonResponse(data, safe=False)
+    # 4. Return Dictionary (bukan List langsung)
+    return JsonResponse({
+        "status": "success",
+        "is_admin": is_admin,  # <--- Ini kuncinya!
+        "reports": reports_data # Data list masuk ke sini
+    }) # safe=False tidak perlu jika luarnya dictionary
 
 def proxy_image(request):
     image_url = request.GET.get('url')
@@ -281,7 +285,6 @@ def create_report_flutter(request):
 from django.shortcuts import get_object_or_404
 
 @csrf_exempt
-@login_required
 def edit_report_flutter(request, id):
     if request.method == 'POST':
         # 1. Cari report berdasarkan ID
@@ -314,7 +317,6 @@ def edit_report_flutter(request, id):
     return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
 
 @csrf_exempt
-@login_required
 def delete_report_flutter(request, id):
     # Hanya menerima method POST agar tidak terhapus tidak sengaja lewat browser
     if request.method == 'POST':
@@ -331,7 +333,26 @@ def delete_report_flutter(request, id):
 
         # 3. Hapus data
         report.delete()
+        
 
         return JsonResponse({'status': 'success', 'message': 'Report berhasil dihapus'})
 
     return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
+
+@csrf_exempt
+def change_status_flutter(request, report_id):
+    if request.method == 'POST':
+        try:
+            report = Report.objects.get(pk=report_id)
+            data = json.loads(request.body)
+            new_status = data.get('status')
+            
+            if new_status:
+                report.status = new_status
+                report.save()
+                return JsonResponse({"status": "success", "message": "Status updated"})
+            else:
+                return JsonResponse({"status": "error", "message": "No status provided"}, status=400)
+        except Report.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "Report not found"}, status=404)
+    return JsonResponse({"status": "error", "message": "Method not allowed"}, status=405)
