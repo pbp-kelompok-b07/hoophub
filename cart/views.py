@@ -163,8 +163,9 @@ def add_to_cart(request, product_id):
     request.session.modified = True
     return redirect(request.META.get('HTTP_REFERER', 'main:show_main'))
 
-@login_required
 def get_cart_json(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"status": "error", "message": "User belum login"}, status=401)
     cart = request.session.get('cart', {})
     data = []
 
@@ -231,14 +232,11 @@ def delete_cart_flutter(request):
 @csrf_exempt
 def checkout_flutter(request):
     if request.method == 'POST':
-        user = request.user
-        cart_items = Product.objects.filter(user=user)
-        
-        if not cart_items.exists():
-             return JsonResponse({"status": "error", "message": "Cart is empty"}, status=400)
-        
-        cart_items.delete()
-        
-        return JsonResponse({"status": "success", "message": "Checkout successful!"}, status=200)
+        if 'cart' in request.session:
+            del request.session['cart']
+            request.session.modified = True
+            return JsonResponse({"status": "success", "message": "Checkout successful!"}, status=200)
+        else:
+            return JsonResponse({"status": "error", "message": "Cart is empty"}, status=400)
         
     return JsonResponse({"status": "error"}, status=401)
