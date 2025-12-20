@@ -182,7 +182,7 @@ def get_cart_json(request):
                     "price": product.price,
                     "quantity": quantity,
                     "subtotal": subtotal,
-                    "thumbnail_url": product.image.url if product.image else "",
+                    "thumbnail_url": product.image if product.image else "",
                 }
             })
         except Product.DoesNotExist:
