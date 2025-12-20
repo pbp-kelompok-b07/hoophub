@@ -34,9 +34,7 @@ DEBUG = True
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "roselia-evanny-hoophub.pbp.cs.ui.ac.id", "10.0.2.2"]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://roselia-evanny-hoophub.pbp.cs.ui.ac.id",
-    "http://localhost:58517",
-    "http://127.0.0.1:58517",
+    "https://roselia-evanny-hoophub.pbp.cs.ui.ac.id"
 ]
 
 # Application definition
@@ -162,12 +160,10 @@ NUMBER_GROUPING = 3
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
-# === CSRF & SESSION (DEV FRIENDLY) ===
-CSRF_COOKIE_SECURE = False
-SESSION_COOKIE_SECURE = False
-
-CSRF_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SAMESITE = 'None'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
