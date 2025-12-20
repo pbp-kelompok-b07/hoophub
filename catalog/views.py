@@ -2,13 +2,43 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Product
 from django import forms
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import Product
 
 # ---------- FORM ----------
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         exclude = ['rating']
+@csrf_exempt
+def edit_product(request, id):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "Invalid method"}, status=405)
 
+    if not request.user.is_authenticated or not request.user.is_staff:
+        return JsonResponse(
+            {"success": False, "message": "Unauthorized"},
+            status=403
+        )
+
+    product = get_object_or_404(Product, id=id)
+
+    try:
+        product.name = request.POST.get("name", product.name)
+        product.brand = request.POST.get("brand", product.brand)
+        product.category = request.POST.get("category", product.category)
+        product.description = request.POST.get("description", product.description)
+        product.price = int(request.POST.get("price", product.price))
+        product.stock = int(request.POST.get("stock", product.stock))
+        product.image = request.POST.get("image", product.image)
+        product.save()
+    except Exception as e:
+        return JsonResponse(
+            {"success": False, "message": str(e)},
+            status=400
+        )
+
+    return JsonResponse({"success": True})
 
 # ---------- VIEW: LIST + FILTER ----------
 def product_list(request):
@@ -41,31 +71,40 @@ def product_detail(request, pk):
 
 
 # ---------- VIEW: CREATE (untuk AJAX modal) ----------
+@csrf_exempt
 def product_create(request):
     if request.method == "POST":
-        name = request.POST.get("name")
-        brand = request.POST.get("brand")
-        category = request.POST.get("category")
-        description = request.POST.get("description") 
-        price = request.POST.get("price")
-        stock = request.POST.get("stock")
-        image = request.POST.get("image")
-        release_date = request.POST.get("release_date")
-        is_available = request.POST.get("is_available") == "on"
 
-        Product.objects.create(
-            name=name,
-            brand=brand,
-            category=category,
-            description=description,
-            price=price,
-            stock=stock,
-            image=image,
-            release_date=release_date,
-            is_available=is_available,
-        )
+        if not request.user.is_authenticated or not request.user.is_staff:
+            return JsonResponse(
+                {"success": False, "message": "Unauthorized"},
+                status=403
+            )
+
+        try:
+            Product.objects.create(
+                name=request.POST.get("name"),
+                brand=request.POST.get("brand"),
+                category=request.POST.get("category"),
+                description=request.POST.get("description"),
+                price=int(request.POST.get("price", 0)),
+                stock=int(request.POST.get("stock", 0)),
+                image=request.POST.get("image"),
+                release_date=request.POST.get("release_date") or None,
+                is_available=request.POST.get("is_available") == "on",
+            )
+        except Exception as e:
+            return JsonResponse(
+                {"success": False, "message": str(e)},
+                status=400
+            )
+
         return JsonResponse({"success": True})
-    return JsonResponse({"success": False, "message": "Invalid request"}, status=400)
+
+    return JsonResponse(
+        {"success": False, "message": "Invalid request"},
+        status=400
+    )
 
 
 # ---------- VIEW: UPDATE ----------
@@ -92,7 +131,7 @@ def product_delete(request, pk):
 def products_json(request):
     products = Product.objects.filter(is_available=True).values(
         "id", "name", "brand", "category", "price",
-        "release_date", "is_available", "image", "description"
+        "release_date", "is_available", "image", "description","stock",
     )
     return JsonResponse(list(products), safe=False)
 
@@ -142,5 +181,6 @@ def products_filtered_json(request):
         "is_available",
         "image",
         "description",
+        "stock",
     ))
     return JsonResponse(data, safe=False)
