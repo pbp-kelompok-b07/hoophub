@@ -3,6 +3,18 @@ from django.contrib.auth.models import User
 from catalog.models import Product
 import uuid
 
+class CartItem(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    @property
+    def subtotal(self):
+        return self.product.price * self.quantity
+
+    def __str__(self):
+        return f"{self.user.username} - {self.product.name}"
+
 class Order(models.Model):
     STATUS_CHOICES = [
         ('Pending', 'Pending'),

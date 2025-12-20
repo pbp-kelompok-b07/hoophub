@@ -116,7 +116,7 @@
                         Quantity: {{ item.quantity }}
                     </h4>
                     <h4 style="font-size: 1.2rem; font-weight: bold; margin: 0 0 10px 0;">
-                        Subtotal: Rp{{ item.item_total }}
+                        Subtotal: Rp{{ item.subtotal }}
                     </h4>
 
                     <p style="font-size: 0.9rem; color: #555; margin: 0 0 15px 0; line-height: 1.5;">
@@ -124,7 +124,7 @@
                     </p>
 
                     <div class="item-actions pb-4">
-                        <form action="{% url 'cart:remove_from_cart' item.id %}" method="POST" style="display: inline;">
+                        <form action="{% url 'cart:remove_from_cart' item.product.id %}" method="POST" style="display: inline;">
                             {% csrf_token %}
                             <button type="submit" class="btn-delete" 
                                     style="background-color: #c9302c; color: white; padding: 8px 15px; border: none; border-radius: 5px; font-size: 0.9rem; font-weight: bold; cursor: pointer;">
@@ -175,7 +175,7 @@
                     {% for item in cart_items %}
                     <li style="display: flex; justify-content: space-between;">
                         <span>{{ item.product.name }} (x{{ item.quantity }})</span>
-                        <span>Rp{{ item.item_total }}</span>
+                        <span>Rp{{ item.subtotal }}</span>
                     </li>
                     {% endfor %}
                     <li style="display: flex; justify-content: space-between; font-weight: bold; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px;">
