@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods, require_POST
-
+from django.views.decorators.csrf import csrf_exempt
 from invoice.models import Invoice
 from invoice.forms import InvoiceForm
 from cart.models import Order, OrderItem  # penting: ambil model Order karena Invoice punya foreign key ke Order
@@ -181,3 +181,75 @@ def update_status(request, id):
     })
 
 
+@csrf_exempt
+def show_invoice_json_flutter(request):
+    # 1. Cek Autentikasi
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {"status": "error", "message": "Must be logged in"},
+            status=401
+        )
+
+    # 2. Cek status admin (untuk fleksibilitas)
+    is_admin = request.user.is_superuser or 'admin' in request.user.username.lower()
+
+    # 3. Filter query: 
+    # Jika admin ingin melihat semua, gunakan .all(). 
+    # Jika hanya ingin milik sendiri (sesuai permintaanmu), gunakan filter(user=request.user)
+    if is_admin:
+        # Opsional: ganti jadi .filter(user=request.user) jika admin tetap hanya lihat miliknya
+        invoices = Invoice.objects.all() 
+    else:
+        invoices = Invoice.objects.filter(user=request.user)
+
+    # Optimalisasi Query
+    invoices = invoices.select_related('order')\
+                       .prefetch_related('order__items__product')\
+                       .order_by('-date')
+
+    invoices_data = []
+
+    # 4. Loop Susun Data
+    for invoice in invoices:
+        order = invoice.order
+        items_list = []
+
+        if order:
+            for it in order.items.all():
+                p = it.product
+                # Logika ambil gambar
+                img = ""
+                if hasattr(p, "image") and p.image:
+                    img = str(p.image)
+                elif hasattr(p, "thumbnail") and p.thumbnail:
+                    img = str(p.thumbnail)
+
+                items_list.append({
+                    "product_id": p.id,
+                    "name": p.name,
+                    "brand": getattr(p, "brand", ""),
+                    "price": float(it.price_at_checkout),
+                    "quantity": it.quantity,
+                    "subtotal": float(it.price_at_checkout * it.quantity),
+                    "image": img,
+                })
+
+        # Data per satu Invoice
+        invoices_data.append({
+            "id": invoice.id,
+            "invoice_no": invoice.invoice_no,
+            "date": invoice.date.strftime("%Y-%m-%d %H:%M"),
+            "full_name": getattr(order, "full_name", ""),
+            "address": getattr(order, "address", ""),
+            "city": getattr(order, "city", ""),
+            "total_price": float(getattr(order, "total_price", 0)),
+            "status": getattr(order, "status", "Pending"),
+            "items": items_list,
+        })
+
+    # 5. Return Dictionary (Lebih aman dan rapi untuk Flutter)
+    return JsonResponse({
+        "status": "success",
+        "is_admin": is_admin,
+        "invoices": invoices_data
+    })
