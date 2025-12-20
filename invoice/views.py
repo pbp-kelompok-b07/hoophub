@@ -256,54 +256,41 @@ def show_invoice_json_flutter(request):
 
 @csrf_exempt
 def create_invoice_flutter(request):
-    # Cek auth secara manual agar return JSON, bukan Redirect HTML
-    if not request.user.is_authenticated:
-        return JsonResponse({"status": "error", "message": "User not authenticated"}, status=401)
-
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
             
-            # Ambil data utama dari JSON Flutter
-            full_name = data.get("fullName")
-            address = data.get("address")
-            city = data.get("city")
-            total_price = data.get("totalPrice", 0)
-            
-            # VALIDASI: Pastikan ada barang yang dibeli
-            items_data = data.get("items", [])
-            if not items_data:
-                return JsonResponse({"status": "error", "message": "Cart is empty"}, status=400)
-
-            # 1. Mulai proses pembuatan Invoice
-            # Jika model Invoice kamu hanya bisa simpan SATU produk (seperti di kodenya):
-            first_item = items_data[0]
-            product_id = first_item.get("productId")
-            product_instance = get_object_or_404(Product, pk=product_id)
-
+            # 1. Simpan Header Invoice
             new_invoice = Invoice.objects.create(
                 user=request.user,
-                invoice_no=generate_invoice_no(request.user.id), # Pastikan fungsi ini ada
-                full_name=full_name,
-                product=product_instance, # Jika model Invoice punya field product
-                address=address,
-                city=city,
-                total_price=int(total_price),
-                status="Pending",
+                invoice_no=generate_invoice_no(request.user.id),
+                full_name=data.get("fullName"),
+                address=data.get("address"),
+                city=data.get("city"),
+                total_price=int(data.get("totalPrice", 0)),
+                status="Pending"
             )
 
-            # 2. Hapus Cart HANYA JIKA Invoice berhasil dibuat
+            # 2. Simpan Semua Produk (Looping)
+            items_data = data.get("items", [])
+            for item in items_data:
+                product_obj = Product.objects.get(pk=item.get("productId"))
+                
+                InvoiceItem.objects.create(
+                    invoice=new_invoice,
+                    product=product_obj,
+                    quantity=int(item.get("quantity", 1)),
+                    subtotal=int(item.get("subtotal", 0))
+                )
+
+            # 3. Hapus CartItem karena sudah jadi Invoice
             CartItem.objects.filter(user=request.user).delete()
 
-            return JsonResponse({
-                "status": "success",
-                "message": "Invoice created and cart cleared!"
-            }, status=200)
+            return JsonResponse({"status": "success", "message": "Checkout Berhasil!"}, status=200)
 
+        except Product.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "Salah satu produk tidak ditemukan"}, status=404)
         except Exception as e:
-            return JsonResponse({
-                "status": "error",
-                "message": str(e)
-            }, status=400)
-            
+            return JsonResponse({"status": "error", "message": str(e)}, status=400)
+
     return JsonResponse({"status": "error", "message": "Method not allowed"}, status=405)

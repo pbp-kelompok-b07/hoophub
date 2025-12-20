@@ -18,3 +18,12 @@ class Invoice(models.Model):
 
     def __str__(self):
         return f"{self.invoice_no} - {self.user}"
+    
+class InvoiceItem(models.Model):
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    subtotal = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.product.name} ({self.quantity})"
