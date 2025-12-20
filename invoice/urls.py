@@ -11,5 +11,5 @@ urlpatterns = [
     path("<uuid:id>/reorder/", reorder_invoice, name="reorder"),
     path("<uuid:id>/delete/", delete_invoice, name="delete"),
     path('<uuid:id>/update-status/', update_status, name='update_status'),
-    path('/json/', show_invoice_json_flutter, name='show_invoice_json_flutter'),
+    path('json/', show_invoice_json_flutter, name='show_invoice_json_flutter'),
 ]
