@@ -144,6 +144,7 @@ def get_cart_json(request):
             "pk": item.product.id,
             "fields": {
                 "product_name": item.product.name,
+                "brand": item.product.brand,
                 "price": item.product.price,
                 "quantity": item.quantity,
                 "subtotal": item.subtotal, # Menggunakan properti @property dari model

@@ -9,7 +9,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 from django.views.decorators.csrf import csrf_exempt
 from invoice.models import Invoice
 from invoice.forms import InvoiceForm
-from cart.models import Order, OrderItem  # penting: ambil model Order karena Invoice punya foreign key ke Order
+from cart.models import Order, OrderItem, CartItem  # penting: ambil model Order karena Invoice punya foreign key ke Order
 from catalog.models import Product
 
 ALLOWED_STATUSES = {"Pending", "Paid", "Shipped", "Cancelled"}
@@ -253,3 +253,40 @@ def show_invoice_json_flutter(request):
         "is_admin": is_admin,
         "invoices": invoices_data
     })
+
+@csrf_exempt
+def create_invoice_flutter(request):
+    if request.method == 'POST':
+        try:
+            cart_exists = CartItem.objects.filter(user=request.user).exists()
+        
+            if cart_exists:
+                CartItem.objects.filter(user=request.user).delete()
+            # 1. Ambil data dari body request
+            data = json.loads(request.body)
+
+            # 2. Buat Invoice Utama
+            # Sesuaikan field sebelah kiri dengan field di models.py Django kamu
+            new_invoice = Invoice.objects.create(
+                user = request.user,  # User yang sedang login di Flutter
+                invoice_no = generate_invoice_no(request.user.id),
+                full_name = data.get("fullName"),
+                product = get_object_or_404(Product, pk=data.get("id")),
+                address = data.get("address"),
+                city = data.get("city"),
+                total_price = int(data.get("totalPrice", 0)),
+                status = data.get("status", "Pending"),
+            )
+            new_invoice.save()
+            return JsonResponse({
+                "status": "success",
+                "message": "Invoice and items created successfully!"
+            }, status=200)
+
+        except Exception as e:
+            return JsonResponse({
+                "status": "error",
+                "message": str(e)
+            }, status=400)
+            
+    return JsonResponse({"status": "error", "message": "Method not allowed"}, status=405)
