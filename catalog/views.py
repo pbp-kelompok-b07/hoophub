@@ -4,7 +4,7 @@ from django import forms
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import Product
-
+import json
 # ---------- FORM ----------
 class ProductForm(forms.ModelForm):
     class Meta:
@@ -184,3 +184,28 @@ def products_filtered_json(request):
         "stock",
     ))
     return JsonResponse(data, safe=False)
+@csrf_exempt
+def edit_product_flutter(request, id):
+    if request.method == 'POST':
+        try:
+            product = Product.objects.get(pk=id)
+            
+            data = json.loads(request.body)
+            
+            product.name = data['name']
+            product.brand = data['brand']
+            product.category = data['category']
+            product.description = data['description']
+            product.price = int(data['price'])
+            product.stock = int(data['stock'])
+            product.image_url = data['image_url'] 
+            
+            product.save()
+            
+            return JsonResponse({"status": "success"}, status=200)
+        except Product.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "Produk tidak ditemukan"}, status=404)
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=500)
+            
+    return JsonResponse({"status": "error", "message": "Invalid method"}, status=401)
