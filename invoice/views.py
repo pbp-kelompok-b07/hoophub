@@ -242,6 +242,7 @@ def show_invoice_json_flutter(request):
             "full_name": getattr(order, "full_name", ""),
             "address": getattr(order, "address", ""),
             "city": getattr(order, "city", ""),
+            "postal_code": getattr(order, "postal_code", ""),
             "total_price": float(getattr(order, "total_price", 0)),
             "status": getattr(order, "status", "Pending"),
             "items": items_list,
