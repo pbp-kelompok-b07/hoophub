@@ -334,3 +334,33 @@ def delete_invoice_flutter(request):
             return JsonResponse({"status": "error", "message": str(e)}, status=400)
 
     return JsonResponse({"status": "error", "message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def reorder_flutter(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            items_data = data.get("items", [])
+
+            for item in items_data:
+                product_obj = get_object_or_404(Product, pk=item.get("productId"))
+                
+                cart_item, created = CartItem.objects.get_or_create(
+                    user=request.user,
+                    product=product_obj,
+                    defaults={'quantity': item.get("quantity", 1)}
+                )
+
+                if not created:
+                    cart_item.quantity += int(item.get("quantity", 1))
+                    cart_item.save()
+
+            return JsonResponse({
+                "status": "success", 
+                "message": "Items re-added to cart!"
+            }, status=200)
+
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=400)
+            
+    return JsonResponse({"status": "error", "message": "Method not allowed"}, status=405)
