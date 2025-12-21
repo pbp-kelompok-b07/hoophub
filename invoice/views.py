@@ -281,7 +281,7 @@ def create_invoice_flutter(request):
                     order=new_order, 
                     product=product_obj,
                     quantity=int(item.get("quantity", 1)),
-                    subtotal=int(item.get("subtotal", 0))
+                    price_at_checkout=int(item.get("subtotal", 0))
                 )
 
             # --- TAHAP 3: Buat Model Invoice ---
