@@ -1,5 +1,5 @@
 from django.urls import path
-from invoice.views import show_invoices, invoice_detail, create_invoice, invoice_detail_json, reorder_invoice, delete_invoice, update_status, show_invoice_json_flutter, create_invoice_flutter, delete_invoice_flutter, reorder_flutter
+from invoice.views import show_invoices, invoice_detail, create_invoice, invoice_detail_json, reorder_invoice, delete_invoice, update_status, show_invoice_json_flutter, create_invoice_flutter, delete_invoice_flutter, reorder_flutter, edit_status_flutter
 
 app_name = 'invoice'
 
@@ -15,4 +15,5 @@ urlpatterns = [
     path('create-flutter/', create_invoice_flutter, name='create_invoice_flutter'),
     path('delete-invoice-flutter/', delete_invoice_flutter, name='delete_invoice_flutter'),
     path('reorder-flutter/', reorder_flutter, name='reorder_flutter'),
+    path('edit-status-flutter/', edit_status_flutter, name='edit_status_flutter'),
 ]

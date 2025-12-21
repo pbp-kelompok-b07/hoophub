@@ -365,3 +365,28 @@ def reorder_flutter(request):
             return JsonResponse({"status": "error", "message": str(e)}, status=400)
             
     return JsonResponse({"status": "error", "message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def edit_status_flutter(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            invoice_id = data.get("id")
+            new_status = data.get("status")
+
+            # Ambil invoice untuk mendapatkan order-nya
+            invoice = get_object_or_404(Invoice, pk=invoice_id)
+            
+            if invoice.order:
+                order = invoice.order
+                order.status = new_status
+                order.save()
+                
+                return JsonResponse({"status": "success", "message": f"Status updated to {new_status}"})
+            else:
+                return JsonResponse({"status": "error", "message": "Order not found for this invoice"}, status=404)
+
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=400)
+
+    return JsonResponse({"status": "error", "message": "Method not allowed"}, status=405)
