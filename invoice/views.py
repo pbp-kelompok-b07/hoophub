@@ -11,6 +11,7 @@ from invoice.models import Invoice, InvoiceItem
 from invoice.forms import InvoiceForm
 from cart.models import Order, OrderItem, CartItem  # penting: ambil model Order karena Invoice punya foreign key ke Order
 from catalog.models import Product
+from django.utils.timezone import localtime
 
 ALLOWED_STATUSES = {"Pending", "Paid", "Shipped", "Cancelled"}
 
@@ -132,7 +133,7 @@ def invoice_detail_json(request, id):
 
     data = {
         "invoice_no": invoice.invoice_no,
-        "date": invoice.date.strftime("%Y-%m-%d %H:%M"),
+        "date": localtime(invoice.date).strftime("%Y-%m-%d %H:%M"),
         "order_id": str(order.id) if order else "",
         "full_name": getattr(order, "full_name", ""),
         "address": getattr(order, "address", ""),
@@ -234,7 +235,7 @@ def show_invoice_json_flutter(request):
         invoices_data.append({
             "id": invoice.id,
             "invoice_no": invoice.invoice_no,
-            "date": invoice.date.strftime("%Y-%m-%d %H:%M"),
+            "date": localtime(invoice.date).strftime("%Y-%m-%d %H:%M"),
             "full_name": getattr(order, "full_name", ""),
             "address": getattr(order, "address", ""),
             "city": getattr(order, "city", ""),
