@@ -12,7 +12,7 @@ class Invoice(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True)
-    date = models.DateField(default=timezone.now)
+    date = models.DateTimeField(auto_now_add=True)
     invoice_no = models.CharField(max_length=32, unique=True, db_index=True)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True)
 

@@ -90,7 +90,7 @@ def create_invoice(request):
         if form.is_valid():
             invoice = form.save(commit=False)
             invoice.user = request.user
-            invoice.date = timezone.now().date()
+            invoice.date = timezone.now()
             invoice.invoice_no = generate_invoice_no(request.user.id)
 
             order_id = form.cleaned_data.get("order")
@@ -132,7 +132,7 @@ def invoice_detail_json(request, id):
 
     data = {
         "invoice_no": invoice.invoice_no,
-        "date": invoice.date.strftime("%Y-%m-%d"),
+        "date": invoice.date.strftime("%Y-%m-%d %H:%M"),
         "order_id": str(order.id) if order else "",
         "full_name": getattr(order, "full_name", ""),
         "address": getattr(order, "address", ""),
@@ -190,12 +190,8 @@ def show_invoice_json_flutter(request):
             status=401
         )
 
-    # 2. Cek status admin (untuk fleksibilitas)
     is_admin = request.user.is_superuser or 'admin' in request.user.username.lower()
 
-    # 3. Filter query: 
-    # Jika admin ingin melihat semua, gunakan .all(). 
-    # Jika hanya ingin milik sendiri (sesuai permintaanmu), gunakan filter(user=request.user)
     if is_admin:
         # Opsional: ganti jadi .filter(user=request.user) jika admin tetap hanya lihat miliknya
         invoices = Invoice.objects.all() 
@@ -287,7 +283,7 @@ def create_invoice_flutter(request):
                 user = request.user,
                 order = new_order, # Menghubungkan Invoice ke Order yang baru dibuat
                 invoice_no = generate_invoice_no(request.user.id),
-                date = timezone.now().date()
+                date = timezone.now()
             )
 
             CartItem.objects.filter(user=request.user).delete()
