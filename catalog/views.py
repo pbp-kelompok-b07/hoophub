@@ -259,3 +259,18 @@ def create_product_flutter(request):
             return JsonResponse({"status": "error", "message": str(e)}, status=500)
     
     return JsonResponse({"status": "error", "message": "Invalid method"}, status=401)
+@csrf_exempt
+def delete_product_flutter(request, id):
+    if request.method == 'POST':
+        try:
+            # Pastikan hanya Admin yang bisa menghapus
+            if not request.user.is_superuser: # Atau is_staff, sesuaikan logic kamu
+                 return JsonResponse({"status": "error", "message": "Bukan Admin"}, status=403)
+
+            product = Product.objects.get(pk=id)
+            product.delete()
+            return JsonResponse({"status": "success"}, status=200)
+        except Product.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "Produk tidak ditemukan"}, status=404)
+    
+    return JsonResponse({"status": "error", "message": "Invalid method"}, status=401)
