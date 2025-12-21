@@ -343,7 +343,8 @@ def reorder_flutter(request):
             items_data = data.get("items", [])
 
             for item in items_data:
-                product_obj = get_object_or_404(Product, pk=item.get("productId"))
+                product_id = item.get("productId")
+                product_obj = get_object_or_404(Product, pk=product_id)
                 
                 cart_item, created = CartItem.objects.get_or_create(
                     user=request.user,
