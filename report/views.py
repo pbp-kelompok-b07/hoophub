@@ -356,3 +356,4 @@ def change_status_flutter(request, report_id):
         except Report.DoesNotExist:
             return JsonResponse({"status": "error", "message": "Report not found"}, status=404)
     return JsonResponse({"status": "error", "message": "Method not allowed"}, status=405)
+

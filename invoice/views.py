@@ -307,3 +307,30 @@ def create_invoice_flutter(request):
             return JsonResponse({"status": "error", "message": str(e)}, status=400)
 
     return JsonResponse({"status": "error", "message": "Method not allowed"}, status=405)
+
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import get_object_or_404
+
+@csrf_exempt
+def delete_invoice_flutter(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            invoice_id = data.get("id")
+            
+            invoice = get_object_or_404(Invoice, pk=invoice_id)
+            
+            if invoice.user != request.user:
+                return JsonResponse({"status": "error", "message": "Unauthorized"}, status=403)
+
+            if invoice.order:
+                invoice.order.delete()
+            else:
+                invoice.delete()
+
+            return JsonResponse({"status": "success", "message": "Invoice deleted!"}, status=200)
+
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=400)
+
+    return JsonResponse({"status": "error", "message": "Method not allowed"}, status=405)
