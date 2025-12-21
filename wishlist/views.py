@@ -169,10 +169,12 @@ def show_json(request):
             "id": w.id,
             "product_id": prod.id if prod else None,
             "product_name": str(prod) if prod else None,
-            # try to include common product fields if they exist
             "product_price": getattr(prod, "price", None),
             "product_brand": getattr(prod, "brand", None),
-            "product_thumbnail": getattr(prod, "thumbnail", None),
+            
+            "image_url": getattr(prod, "image", None), 
+            # Kita pakai key 'image_url' agar sesuai dengan parsing di Flutter
+            
             "date_added": w.date_added.isoformat() if getattr(w, "date_added", None) else None,
             "user_id": w.user_id,
         }
@@ -205,7 +207,9 @@ def show_json_by_id(request, wishlist_id):
         "product_name": str(prod) if prod else None,
         "product_price": getattr(prod, "price", None),
         "product_brand": getattr(prod, "brand", None),
-        "product_thumbnail": getattr(prod, "thumbnail", None),
+        
+        "image_url": getattr(prod, "image", None), 
+        
         "date_added": w.date_added.isoformat() if getattr(w, "date_added", None) else None,
         "user_id": w.user_id,
         "user_username": w.user.username if getattr(w.user, "username", None) else None,
