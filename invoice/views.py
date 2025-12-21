@@ -261,40 +261,35 @@ def create_invoice_flutter(request):
         try:
             data = json.loads(request.body)
             
-            # --- TAHAP 1: Buat Model Order ---
-            # Field ini sekarang masuk ke Order sesuai permintaanmu
             new_order = Order.objects.create(
-                user=request.user,
-                full_name=data.get("fullName"),
-                address=data.get("address"),
-                city=data.get("city"),
-                total_price=int(data.get("totalPrice", 0)),
-                status="Pending" # Status disimpan di Order
+                user = request.user,
+                full_name = data.get("fullName"),
+                address = data.get("address"),
+                city = data.get("city"),
+                postal_code = data.get("postalCode"),
+                total_price = int(data.get("totalPrice", 0)),
+                status = "Pending" # Status disimpan di Order
             )
 
-            # --- TAHAP 2: Buat OrderItems (Looping) ---
             items_data = data.get("items", [])
             for item in items_data:
                 product_obj = Product.objects.get(pk=item.get("id"))
                 
                 # Menghubungkan barang ke new_order
                 OrderItem.objects.create(
-                    order=new_order, 
-                    product=product_obj,
-                    quantity=int(item.get("quantity", 1)),
-                    price_at_checkout=int(item.get("subtotal", 0))
+                    order = new_order, 
+                    product = product_obj,
+                    quantity = int(item.get("quantity", 1)),
+                    price_at_checkout = int(item.get("subtotal", 0))
                 )
 
-            # --- TAHAP 3: Buat Model Invoice ---
-            # Invoice sekarang hanya menyimpan data dokumen dan link ke Order
             new_invoice = Invoice.objects.create(
-                user=request.user,
-                order=new_order, # Menghubungkan Invoice ke Order yang baru dibuat
-                invoice_no=generate_invoice_no(request.user.id),
-                date=timezone.now().date()
+                user = request.user,
+                order = new_order, # Menghubungkan Invoice ke Order yang baru dibuat
+                invoice_no = generate_invoice_no(request.user.id),
+                date = timezone.now().date()
             )
 
-            # --- TAHAP 4: Bersihkan Keranjang ---
             CartItem.objects.filter(user=request.user).delete()
 
             return JsonResponse({
