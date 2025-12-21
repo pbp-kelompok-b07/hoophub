@@ -21,4 +21,5 @@ urlpatterns = [
     path('json/', views.products_json, name='products_json'),
     path('review/<int:pk>/', views.get_reviews, name='get_reviews'),
     path('json/filtered/', views.products_filtered_json, name='products_filtered_json'),
+    path('create-flutter/', views.create_product_flutter, name='create_product_flutter'),
 ]

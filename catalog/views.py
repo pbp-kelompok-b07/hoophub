@@ -209,3 +209,26 @@ def edit_product_flutter(request, id):
             return JsonResponse({"status": "error", "message": str(e)}, status=500)
             
     return JsonResponse({"status": "error", "message": "Invalid method"}, status=401)
+@csrf_exempt
+def create_product_flutter(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            
+            new_product = Product.objects.create(
+                user=request.user, 
+                name=data["name"],
+                brand=data["brand"],
+                category=data["category"],
+                price=int(data["price"]),
+                stock=int(data["stock"]),
+                description=data["description"],
+                image=data["image"], 
+            )
+            new_product.save()
+
+            return JsonResponse({"status": "success"}, status=200)
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=500)
+    
+    return JsonResponse({"status": "error", "message": "Invalid method"}, status=401)
