@@ -7,7 +7,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods, require_POST
 from django.views.decorators.csrf import csrf_exempt
-from invoice.models import Invoice
+from invoice.models import Invoice, InvoiceItem
 from invoice.forms import InvoiceForm
 from cart.models import Order, OrderItem, CartItem  # penting: ambil model Order karena Invoice punya foreign key ke Order
 from catalog.models import Product
@@ -260,36 +260,49 @@ def create_invoice_flutter(request):
         try:
             data = json.loads(request.body)
             
-            # 1. Simpan Header Invoice
-            new_invoice = Invoice.objects.create(
+            # --- TAHAP 1: Buat Model Order ---
+            # Field ini sekarang masuk ke Order sesuai permintaanmu
+            new_order = Order.objects.create(
                 user=request.user,
-                invoice_no=generate_invoice_no(request.user.id),
                 full_name=data.get("fullName"),
                 address=data.get("address"),
                 city=data.get("city"),
                 total_price=int(data.get("totalPrice", 0)),
-                status="Pending"
+                status="Pending" # Status disimpan di Order
             )
 
-            # 2. Simpan Semua Produk (Looping)
+            # --- TAHAP 2: Buat OrderItems (Looping) ---
             items_data = data.get("items", [])
             for item in items_data:
-                product_obj = Product.objects.get(pk=item.get("productId"))
+                product_obj = Product.objects.get(pk=item.get("id"))
                 
-                InvoiceItem.objects.create(
-                    invoice=new_invoice,
+                # Menghubungkan barang ke new_order
+                OrderItem.objects.create(
+                    order=new_order, 
                     product=product_obj,
                     quantity=int(item.get("quantity", 1)),
                     subtotal=int(item.get("subtotal", 0))
                 )
 
-            # 3. Hapus CartItem karena sudah jadi Invoice
+            # --- TAHAP 3: Buat Model Invoice ---
+            # Invoice sekarang hanya menyimpan data dokumen dan link ke Order
+            new_invoice = Invoice.objects.create(
+                user=request.user,
+                order=new_order, # Menghubungkan Invoice ke Order yang baru dibuat
+                invoice_no=generate_invoice_no(request.user.id),
+                date=timezone.now().date()
+            )
+
+            # --- TAHAP 4: Bersihkan Keranjang ---
             CartItem.objects.filter(user=request.user).delete()
 
-            return JsonResponse({"status": "success", "message": "Checkout Berhasil!"}, status=200)
+            return JsonResponse({
+                "status": "success", 
+                "message": "Order and Invoice created successfully!"
+            }, status=200)
 
         except Product.DoesNotExist:
-            return JsonResponse({"status": "error", "message": "Salah satu produk tidak ditemukan"}, status=404)
+            return JsonResponse({"status": "error", "message": "Product not found"}, status=404)
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=400)
 
